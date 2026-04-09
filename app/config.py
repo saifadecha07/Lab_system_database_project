@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     session_https_only: bool = False
     password_hash_scheme: str = "argon2"
     rate_limit_login: str = "5/minute"
-    allowed_hosts: list[str] | str = ["localhost", "127.0.0.1", "healthcheck.railway.app"]
+    allowed_hosts: list[str] | str = ["localhost", "127.0.0.1", "healthcheck.railway.app", "*.railway.app", "*.up.railway.app"]
     cors_origins: list[str] | str = ["http://localhost:8000"]
     csrf_header_name: str = "X-CSRF-Token"
     csrf_exempt_paths: list[str] | str = ["/auth/login", "/auth/register", "/healthz"]
