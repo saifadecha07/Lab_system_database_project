@@ -1,0 +1,66 @@
+:root {
+    --bg: #f4efe6;
+    --ink: #1a1a1a;
+    --accent: #b4472a;
+    --panel: #fffaf3;
+    --line: #d8c9b6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background:
+        radial-gradient(circle at top left, rgba(180, 71, 42, 0.12), transparent 35%),
+        linear-gradient(180deg, #f8f3ea 0%, var(--bg) 100%);
+    color: var(--ink);
+}
+
+.shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.hero {
+    width: min(760px, 100%);
+    padding: 40px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 20px 60px rgba(38, 26, 16, 0.08);
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    font-size: 0.8rem;
+}
+
+h1 {
+    margin: 12px 0;
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    line-height: 0.95;
+}
+
+.lede {
+    max-width: 60ch;
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.meta {
+    margin-top: 24px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: #5c4a38;
+}
+
+a {
+    color: var(--accent);
+}

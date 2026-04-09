@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <p class="eyebrow">CN230 Security-First Scaffold</p>
+            <h1>{{ app_name }}</h1>
+            <p class="lede">
+                FastAPI + PostgreSQL baseline for authentication, RBAC, reservations,
+                maintenance, borrowing, penalties, and Railway deployment.
+            </p>
+            <div class="meta">
+                <span>Client IP: {{ client_ip }}</span>
+                <span>Health: <a href="/healthz">/healthz</a></span>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+
