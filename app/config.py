@@ -35,6 +35,17 @@ class Settings(BaseSettings):
             return value
         return [item.strip() for item in value.split(",") if item.strip()]
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        if value.startswith("postgresql+"):
+            return value
+        if value.startswith("postgres://"):
+            return "postgresql+psycopg://" + value.removeprefix("postgres://")
+        if value.startswith("postgresql://"):
+            return "postgresql+psycopg://" + value.removeprefix("postgresql://")
+        return value
+
     @field_validator("session_same_site")
     @classmethod
     def validate_same_site(cls, value: str) -> str:
