@@ -57,6 +57,7 @@ uvicorn app.main:app --reload
 - `http://127.0.0.1:8000`
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/healthz`
+- `http://127.0.0.1:8000/readyz`
 
 ## Railway Setup
 
@@ -77,7 +78,8 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ## Important Notes
 
-- The app now expects a migrated database and will fail startup if required tables are missing.
+- `/healthz` is a liveness endpoint for the process.
+- `/readyz` checks database connectivity and required schema readiness.
 - Browser-authenticated mutating requests now require the `X-CSRF-Token` header returned after login.
 - Audit logs are recorded for high-risk admin and operational actions, but broader observability is still recommended.
 

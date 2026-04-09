@@ -27,6 +27,12 @@ Set these on Railway:
 - `ALLOWED_HOSTS`
 - `PENALTY_RATE_PER_HOUR`
 
+For `ALLOWED_HOSTS`, include:
+
+- `healthcheck.railway.app`
+- your Railway public domain
+- any custom domain you attach
+
 ## 3. Railway Start Command
 
 ```bash
@@ -41,8 +47,9 @@ It is included in:
 Current `railway.json` also configures:
 
 - `preDeployCommand=alembic upgrade head`
-- `healthcheckPath=/healthz`
+- `healthcheckPath=/readyz`
 - restart on failure
+- `/readyz` is available for database/schema readiness checks
 
 ## 4. PostgreSQL Notes
 
@@ -74,6 +81,7 @@ Rules:
 5. Run `alembic upgrade head`
 6. Seed baseline roles
 7. Verify `/healthz`
-8. Test register/login/admin role flow in staging
+8. Verify `/readyz`
+9. Test register/login/admin role flow in staging
 
 The current migration chain also enables the PostgreSQL `btree_gist` extension and adds a reservation overlap exclusion constraint.

@@ -1,4 +1,8 @@
-from conftest import create_borrowing_graph, create_user, login
+import importlib
+
+from fastapi.testclient import TestClient
+
+from conftest import _clear_app_modules, create_borrowing_graph, create_user, login
 
 
 def test_registration_assigns_student_role_and_login_returns_csrf(client, db_session, model_bundle):
@@ -107,3 +111,36 @@ def test_late_return_creates_penalty_and_audit_log(client, db_session, model_bun
 
     assert float(refreshed_penalty.fine_amount) == 50.0
     assert audit_log.action == "equipment.returned"
+
+
+def test_healthz_is_live_even_when_schema_is_missing(tmp_path, monkeypatch):
+    database_path = tmp_path / "missing.db"
+    monkeypatch.setenv("APP_ENV", "test")
+    monkeypatch.setenv("APP_NAME", "Smart Lab Test")
+    monkeypatch.setenv("DEBUG", "false")
+    monkeypatch.setenv("SECRET_KEY", "test-secret-key")
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{database_path}")
+    monkeypatch.setenv("SESSION_COOKIE_NAME", "smartlab_test_session")
+    monkeypatch.setenv("SESSION_MAX_AGE", "3600")
+    monkeypatch.setenv("SESSION_SAME_SITE", "lax")
+    monkeypatch.setenv("SESSION_HTTPS_ONLY", "false")
+    monkeypatch.setenv("RATE_LIMIT_LOGIN", "100/minute")
+    monkeypatch.setenv("ALLOWED_HOSTS", "testserver,localhost,127.0.0.1")
+    monkeypatch.setenv("CORS_ORIGINS", "http://testserver")
+    monkeypatch.setenv("CSRF_EXEMPT_PATHS", "/auth/login,/auth/register,/healthz,/readyz")
+    monkeypatch.setenv("PENALTY_RATE_PER_HOUR", "25")
+
+    _clear_app_modules()
+
+    config_module = importlib.import_module("app.config")
+    config_module.get_settings.cache_clear()
+    main_module = importlib.import_module("app.main")
+
+    with TestClient(main_module.app) as client:
+        live_response = client.get("/healthz")
+        ready_response = client.get("/readyz")
+
+    assert live_response.status_code == 200, live_response.text
+    assert live_response.json()["status"] == "ok"
+    assert ready_response.status_code == 503, ready_response.text
+    assert ready_response.json()["status"] == "degraded"

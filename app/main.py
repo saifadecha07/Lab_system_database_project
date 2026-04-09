@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -23,20 +24,27 @@ from sqlalchemy import inspect
 
 settings = get_settings()
 templates = Jinja2Templates(directory="app/templates")
+logger = logging.getLogger(__name__)
 
 
-def validate_database_state() -> None:
-    inspector = inspect(engine)
-    model_tables = set(Base.metadata.tables)
-    missing_tables = sorted(table_name for table_name in model_tables if not inspector.has_table(table_name))
+def check_database_state() -> tuple[bool, str | None]:
+    try:
+        inspector = inspect(engine)
+        model_tables = set(Base.metadata.tables)
+        missing_tables = sorted(table_name for table_name in model_tables if not inspector.has_table(table_name))
+    except Exception as exc:
+        logger.warning("Database readiness check failed: %s", exc)
+        return False, "Database connection failed"
+
     if missing_tables:
         missing = ", ".join(missing_tables)
-        raise RuntimeError(f"Database schema is not ready. Run Alembic migrations before startup. Missing tables: {missing}")
+        return False, f"Database schema is not ready. Missing tables: {missing}"
+
+    return True, None
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    validate_database_state()
     yield
 
 
@@ -95,4 +103,15 @@ def home(request: Request):
 
 @app.get("/healthz")
 def health_check():
+    return {"status": "ok", "app": settings.app_name}
+
+
+@app.get("/readyz")
+def readiness_check():
+    database_ready, detail = check_database_state()
+    if not database_ready:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "degraded", "app": settings.app_name, "detail": detail},
+        )
     return {"status": "ok", "app": settings.app_name}
