@@ -146,6 +146,12 @@ def test_healthz_is_live_even_when_schema_is_missing(tmp_path, monkeypatch):
     assert ready_response.json()["status"] == "degraded"
 
 
+def test_favicon_route_returns_no_content(client):
+    response = client.get("/favicon.ico")
+
+    assert response.status_code == 204, response.text
+
+
 def test_allowed_hosts_keeps_railway_healthcheck_host(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///./settings-test.db")
     monkeypatch.setenv("ALLOWED_HOSTS", "smart-lab-production.up.railway.app")

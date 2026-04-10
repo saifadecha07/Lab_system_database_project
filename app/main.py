@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from slowapi.errors import RateLimitExceeded
@@ -100,6 +100,11 @@ def home(request: Request):
         "index.html",
         {"request": request, "app_name": settings.app_name, "client_ip": get_remote_address(request)},
     )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
 
 
 @app.get("/healthz")
