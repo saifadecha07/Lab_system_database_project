@@ -63,13 +63,13 @@ def get_or_create(db, model, defaults=None, **kwargs):
 
 
 def seed(db):
-    print("── Ensuring tables exist …")
+    print("-- Ensuring tables exist …")
     Base.metadata.create_all(bind=engine)
 
     # ------------------------------------------------------------------
     # Roles
     # ------------------------------------------------------------------
-    print("── Seeding roles …")
+    print("-- Seeding roles …")
     for name in ("Student", "Staff", "Technician", "Admin"):
         get_or_create(db, Role, role_name=name)
     db.flush()
@@ -80,7 +80,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Lab Types
     # ------------------------------------------------------------------
-    print("── Seeding lab types …")
+    print("-- Seeding lab types …")
     for t in ("Computer Lab", "Science Lab", "General Purpose", "Electronics Lab"):
         get_or_create(db, LabType, type_name=t)
     db.flush()
@@ -91,7 +91,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Equipment Categories
     # ------------------------------------------------------------------
-    print("── Seeding equipment categories …")
+    print("-- Seeding equipment categories …")
     for c in ("Computer", "Microscope", "Chemistry Equipment", "Electronics", "Projector / AV"):
         get_or_create(db, EquipmentCategory, category_name=c)
     db.flush()
@@ -102,7 +102,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Labs
     # ------------------------------------------------------------------
-    print("── Seeding labs …")
+    print("-- Seeding labs …")
     labs_data = [
         ("CS-101", 30, "Available",    lab_type("Computer Lab")),
         ("CS-102", 30, "Available",    lab_type("Computer Lab")),
@@ -123,7 +123,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Users
     # ------------------------------------------------------------------
-    print("── Seeding users …")
+    print("-- Seeding users …")
     users_data = [
         ("Admin",      "admin@lab.demo",  "Adam",  "Admin"),
         ("Staff",      "staff@lab.demo",  "Sara",  "Staff"),
@@ -164,7 +164,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Equipment
     # ------------------------------------------------------------------
-    print("── Seeding equipment …")
+    print("-- Seeding equipment …")
     equip_data = [
         ("PC-Workstation-01", cat("Computer"),            lab_objs["CS-101"],  "Available"),
         ("PC-Workstation-02", cat("Computer"),            lab_objs["CS-101"],  "Available"),
@@ -194,7 +194,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Lab Reservations
     # ------------------------------------------------------------------
-    print("── Seeding lab reservations …")
+    print("-- Seeding lab reservations …")
     reservations_data = [
         (alice, lab_objs["CS-101"],  NOW + timedelta(days=1),  NOW + timedelta(days=1, hours=2),  "Approved"),
         (bob,   lab_objs["CS-102"],  NOW + timedelta(days=2),  NOW + timedelta(days=2, hours=3),  "Pending"),
@@ -226,7 +226,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Equipment Borrowings
     # ------------------------------------------------------------------
-    print("── Seeding equipment borrowings …")
+    print("-- Seeding equipment borrowings …")
 
     def make_borrowing(user, equip, borrow_offset_h, expected_offset_h, actual_offset_h, status):
         return EquipmentBorrowing(
@@ -259,7 +259,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Penalties
     # ------------------------------------------------------------------
-    print("── Seeding penalties …")
+    print("-- Seeding penalties …")
     # Bob returned Microscope-01 2 h late  → 2 × 25 = 50 THB
     p1 = Penalty(
         user_id=bob.user_id,
@@ -283,7 +283,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Maintenance Records
     # ------------------------------------------------------------------
-    print("── Seeding maintenance records …")
+    print("-- Seeding maintenance records …")
     m1 = MaintenanceRecord(
         equipment_id=equip_objs["Oscilloscope-01"].equipment_id,
         reported_by=alice.user_id,
@@ -328,7 +328,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Notifications
     # ------------------------------------------------------------------
-    print("── Seeding notifications …")
+    print("-- Seeding notifications …")
     notifs = [
         Notification(user_id=bob.user_id,   message="A penalty of 50.00 THB has been created for late return of Microscope-01.", is_read=False),
         Notification(user_id=carol.user_id, message="A penalty of 175.00 THB has been created for late return of PC-Workstation-03.", is_read=False),
@@ -342,7 +342,7 @@ def seed(db):
     # ------------------------------------------------------------------
     # Audit Logs
     # ------------------------------------------------------------------
-    print("── Seeding audit logs …")
+    print("-- Seeding audit logs …")
     audit_entries = [
         AuditLog(actor_user_id=admin_user.user_id, action="lab.created",        target_type="lab",       target_id=lab_objs["CS-101"].lab_id,  details={"room_name": "CS-101"}),
         AuditLog(actor_user_id=admin_user.user_id, action="lab.created",        target_type="lab",       target_id=lab_objs["CS-102"].lab_id,  details={"room_name": "CS-102"}),
@@ -355,7 +355,7 @@ def seed(db):
     db.flush()
 
     db.commit()
-    print("\n✓  Demo seed completed successfully!")
+    print("\nOK  Demo seed completed successfully!")
     print(f"   Login URL: http://localhost:8000")
     print(f"   Admin:      admin@lab.demo / {DEMO_PASSWORD}")
     print(f"   Staff:      staff@lab.demo / {DEMO_PASSWORD}")
@@ -369,7 +369,7 @@ if __name__ == "__main__":
         seed(db)
     except Exception as exc:
         db.rollback()
-        print(f"\n✗  Seed failed: {exc}")
+        print(f"\nFAIL  Seed failed: {exc}")
         raise
     finally:
         db.close()
