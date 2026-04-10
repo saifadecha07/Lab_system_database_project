@@ -45,11 +45,7 @@ def check_database_state() -> tuple[bool, str | None]:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    database_ready, detail = check_database_state()
-    if database_ready:
-        logger.info("Application startup readiness check passed")
-    else:
-        logger.warning("Application startup readiness check failed: %s", detail)
+    logger.info("Application startup complete")
     yield
 
 

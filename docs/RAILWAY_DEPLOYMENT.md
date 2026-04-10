@@ -49,9 +49,10 @@ It is included in:
 Current `railway.json` also configures:
 
 - `preDeployCommand=alembic upgrade head`
-- `healthcheckPath=/readyz`
+- `healthcheckPath=/healthz`
 - restart on failure
-- `/readyz` is available for database/schema readiness checks
+- `/healthz` stays process-only so Railway can mark the replica live even if PostgreSQL is still warming up
+- `/readyz` remains available for database/schema readiness checks
 
 ## 4. PostgreSQL Notes
 
