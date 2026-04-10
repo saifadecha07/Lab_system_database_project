@@ -33,6 +33,8 @@ For `ALLOWED_HOSTS`, include:
 - your Railway public domain
 - any custom domain you attach
 
+The application now always preserves Railway platform hosts even if you provide a custom `ALLOWED_HOSTS` value, which avoids accidental 400 responses on Railway health checks.
+
 ## 3. Railway Start Command
 
 ```bash

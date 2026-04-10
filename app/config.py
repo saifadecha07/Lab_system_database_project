@@ -4,6 +4,21 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+DEFAULT_ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "healthcheck.railway.app",
+    "*.railway.app",
+    "*.up.railway.app",
+]
+
+
+def _split_csv(value: str | list[str]) -> list[str]:
+    if isinstance(value, list):
+        return value
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 class Settings(BaseSettings):
     app_env: str = "development"
     app_name: str = "Smart Lab Management System"
@@ -16,7 +31,7 @@ class Settings(BaseSettings):
     session_https_only: bool = False
     password_hash_scheme: str = "argon2"
     rate_limit_login: str = "5/minute"
-    allowed_hosts: list[str] | str = ["localhost", "127.0.0.1", "healthcheck.railway.app", "*.railway.app", "*.up.railway.app"]
+    allowed_hosts: list[str] | str = DEFAULT_ALLOWED_HOSTS
     cors_origins: list[str] | str = ["http://localhost:8000"]
     csrf_header_name: str = "X-CSRF-Token"
     csrf_exempt_paths: list[str] | str = ["/auth/login", "/auth/register", "/healthz"]
@@ -31,9 +46,16 @@ class Settings(BaseSettings):
     @field_validator("allowed_hosts", "cors_origins", "csrf_exempt_paths", mode="before")
     @classmethod
     def split_csv(cls, value: str | list[str]) -> list[str]:
-        if isinstance(value, list):
-            return value
-        return [item.strip() for item in value.split(",") if item.strip()]
+        return _split_csv(value)
+
+    @field_validator("allowed_hosts")
+    @classmethod
+    def include_platform_hosts(cls, value: list[str]) -> list[str]:
+        merged_hosts: list[str] = []
+        for host in [*value, *DEFAULT_ALLOWED_HOSTS]:
+            if host not in merged_hosts:
+                merged_hosts.append(host)
+        return merged_hosts
 
     @field_validator("database_url", mode="before")
     @classmethod

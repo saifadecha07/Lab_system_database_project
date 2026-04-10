@@ -144,3 +144,17 @@ def test_healthz_is_live_even_when_schema_is_missing(tmp_path, monkeypatch):
     assert live_response.json()["status"] == "ok"
     assert ready_response.status_code == 503, ready_response.text
     assert ready_response.json()["status"] == "degraded"
+
+
+def test_allowed_hosts_keeps_railway_healthcheck_host(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///./settings-test.db")
+    monkeypatch.setenv("ALLOWED_HOSTS", "smart-lab-production.up.railway.app")
+
+    _clear_app_modules()
+
+    config_module = importlib.import_module("app.config")
+    config_module.get_settings.cache_clear()
+    settings = config_module.get_settings()
+
+    assert "smart-lab-production.up.railway.app" in settings.allowed_hosts
+    assert "healthcheck.railway.app" in settings.allowed_hosts
