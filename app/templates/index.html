@@ -6,21 +6,342 @@
     <title>{{ app_name }}</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <main class="shell">
-        <section class="hero">
-            <p class="eyebrow">CN230 Security-First Scaffold</p>
-            <h1>{{ app_name }}</h1>
-            <p class="lede">
-                FastAPI + PostgreSQL baseline for authentication, RBAC, reservations,
-                maintenance, borrowing, penalties, and Railway deployment.
-            </p>
-            <div class="meta">
-                <span>Client IP: {{ client_ip }}</span>
-                <span>Health: <a href="/healthz">/healthz</a></span>
+<body data-app-name="{{ app_name }}" data-client-ip="{{ client_ip }}">
+    <div class="page-shell">
+        <header class="masthead">
+            <div class="masthead__copy">
+                <p class="eyebrow">CN230 Smart Lab Platform</p>
+                <h1>{{ app_name }}</h1>
+                <p class="lede">
+                    Role-aware operations cockpit for reservations, maintenance, borrowing,
+                    penalties, notifications, and administrative controls.
+                </p>
             </div>
-        </section>
-    </main>
+            <div class="masthead__status">
+                <div class="badge-stack">
+                    <span class="badge">Client {{ client_ip }}</span>
+                    <a class="badge badge--link" href="/healthz">Health</a>
+                    <a class="badge badge--link" href="/docs">API Docs</a>
+                </div>
+                <div id="flash" class="flash flash--idle">Ready</div>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section id="auth-panel" class="panel auth-panel">
+                <div class="panel__header">
+                    <div>
+                        <p class="section-kicker">Access</p>
+                        <h2>Enter The Workspace</h2>
+                    </div>
+                    <p class="panel__summary">
+                        Register as a student or sign in to unlock operator and admin tools by role.
+                    </p>
+                </div>
+                <div class="auth-grid">
+                    <form id="login-form" class="card form-card">
+                        <h3>Login</h3>
+                        <label>
+                            <span>Email</span>
+                            <input name="email" type="email" autocomplete="email" required>
+                        </label>
+                        <label>
+                            <span>Password</span>
+                            <input name="password" type="password" autocomplete="current-password" required>
+                        </label>
+                        <button type="submit">Login</button>
+                    </form>
+
+                    <form id="register-form" class="card form-card">
+                        <h3>Create Student Account</h3>
+                        <label>
+                            <span>First Name</span>
+                            <input name="first_name" type="text" autocomplete="given-name" required>
+                        </label>
+                        <label>
+                            <span>Last Name</span>
+                            <input name="last_name" type="text" autocomplete="family-name" required>
+                        </label>
+                        <label>
+                            <span>Email</span>
+                            <input name="email" type="email" autocomplete="email" required>
+                        </label>
+                        <label>
+                            <span>Password</span>
+                            <input name="password" type="password" autocomplete="new-password" minlength="12" required>
+                        </label>
+                        <button type="submit">Register</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="dashboard" class="dashboard" hidden>
+                <section class="panel profile-band">
+                    <div>
+                        <p class="section-kicker">Session</p>
+                        <h2 id="session-name">Workspace</h2>
+                        <p id="session-meta" class="panel__summary"></p>
+                    </div>
+                    <div class="profile-band__actions">
+                        <button id="refresh-button" class="button-secondary" type="button">Refresh Data</button>
+                        <button id="logout-button" class="button-ghost" type="button">Logout</button>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel__header">
+                        <div>
+                            <p class="section-kicker">Overview</p>
+                            <h2>System Pulse</h2>
+                        </div>
+                    </div>
+                    <div id="overview-cards" class="stats-grid"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel__header">
+                        <div>
+                            <p class="section-kicker">Directory</p>
+                            <h2>Resources</h2>
+                        </div>
+                        <p class="panel__summary">Shared catalog of labs and equipment available to the current user.</p>
+                    </div>
+                    <div class="resource-grid">
+                        <div class="card">
+                            <div class="card__title-row">
+                                <h3>Labs</h3>
+                                <span id="labs-count" class="mini-pill">0</span>
+                            </div>
+                            <div id="labs-list" class="stack-list"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card__title-row">
+                                <h3>Equipment</h3>
+                                <span id="equipment-count" class="mini-pill">0</span>
+                            </div>
+                            <div id="equipment-list" class="stack-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="workspace-grid">
+                    <section class="panel">
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">Self Service</p>
+                                <h2>Student Workflows</h2>
+                            </div>
+                            <p class="panel__summary">Available to any authenticated user for personal tasks.</p>
+                        </div>
+                        <div class="feature-grid">
+                            <form id="reservation-form" class="card form-card">
+                                <h3>Create Reservation</h3>
+                                <label>
+                                    <span>Lab</span>
+                                    <select id="reservation-lab" name="lab_id" required></select>
+                                </label>
+                                <label>
+                                    <span>Start</span>
+                                    <input name="start_time" type="datetime-local" required>
+                                </label>
+                                <label>
+                                    <span>End</span>
+                                    <input name="end_time" type="datetime-local" required>
+                                </label>
+                                <button type="submit">Reserve Lab</button>
+                            </form>
+
+                            <form id="maintenance-form" class="card form-card">
+                                <h3>Report Maintenance</h3>
+                                <label>
+                                    <span>Equipment</span>
+                                    <select id="maintenance-equipment" name="equipment_id" required></select>
+                                </label>
+                                <label>
+                                    <span>Issue Detail</span>
+                                    <textarea name="issue_detail" rows="4" minlength="5" required></textarea>
+                                </label>
+                                <button type="submit">Submit Report</button>
+                            </form>
+                        </div>
+                        <div class="feature-grid">
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>My Reservations</h3>
+                                    <span id="my-reservations-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="my-reservations" class="stack-list"></div>
+                            </div>
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>My Borrowings</h3>
+                                    <span id="my-borrowings-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="my-borrowings" class="stack-list"></div>
+                            </div>
+                        </div>
+                        <div class="feature-grid">
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>Penalties</h3>
+                                    <span id="my-penalties-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="my-penalties" class="stack-list"></div>
+                            </div>
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>Notifications</h3>
+                                    <span id="my-notifications-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="my-notifications" class="stack-list"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="operator-panel" class="panel" hidden>
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">Operations</p>
+                                <h2>Staff Desk</h2>
+                            </div>
+                            <p class="panel__summary">Borrowing control and system summary for Staff and Admin users.</p>
+                        </div>
+                        <div class="feature-grid">
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>Operational Summary</h3>
+                                </div>
+                                <div id="staff-summary" class="metric-list"></div>
+                            </div>
+                            <form id="borrowing-form" class="card form-card">
+                                <h3>Create Borrowing</h3>
+                                <label>
+                                    <span>User</span>
+                                    <select id="borrowing-user" name="user_id" required></select>
+                                </label>
+                                <label>
+                                    <span>Equipment</span>
+                                    <select id="borrowing-equipment" name="equipment_id" required></select>
+                                </label>
+                                <label>
+                                    <span>Expected Return</span>
+                                    <input name="expected_return" type="datetime-local" required>
+                                </label>
+                                <button type="submit">Issue Equipment</button>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <div class="card__title-row">
+                                <h3>Borrowing Queue</h3>
+                                <span id="active-borrowings-count" class="mini-pill">0</span>
+                            </div>
+                            <div id="active-borrowings" class="stack-list"></div>
+                        </div>
+
+                        <div class="card report-card">
+                            <div class="card__title-row">
+                                <h3>Advanced Reports</h3>
+                            </div>
+                            <p style="color:var(--muted);font-size:0.85rem;margin:0 0 12px;">
+                                Complex multi-table queries (JOIN, GROUP BY, HAVING, EXTRACT).
+                            </p>
+                            <div class="report-btn-row">
+                                <button class="button-secondary" data-report="late-borrowings">Late Borrowings</button>
+                                <button class="button-secondary" data-report="top-borrowers">Top Borrowers</button>
+                                <button class="button-secondary" data-report="lab-utilization">Lab Utilisation</button>
+                                <button class="button-secondary" data-report="equipment-repairs">Equipment Repairs</button>
+                                <button class="button-secondary" data-report="reservation-summary">Reservation Summary</button>
+                            </div>
+                            <div id="report-output" class="report-output"></div>
+                        </div>
+                    </section>
+
+                    <section id="technician-panel" class="panel" hidden>
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">Repair</p>
+                                <h2>Maintenance Queue</h2>
+                            </div>
+                            <p class="panel__summary">Technician and Admin users can transition equipment back into service.</p>
+                        </div>
+                        <div class="card">
+                            <div class="card__title-row">
+                                <h3>Open Tickets</h3>
+                                <span id="maintenance-count" class="mini-pill">0</span>
+                            </div>
+                            <div id="maintenance-queue" class="stack-list"></div>
+                        </div>
+                    </section>
+
+                    <section id="admin-panel" class="panel" hidden>
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">Administration</p>
+                                <h2>Control Room</h2>
+                            </div>
+                            <p class="panel__summary">Labs, equipment, user roles, and audit logs for Admin users.</p>
+                        </div>
+                        <div class="feature-grid">
+                            <form id="lab-form" class="card form-card">
+                                <h3>Create Lab</h3>
+                                <label>
+                                    <span>Room Name</span>
+                                    <input name="room_name" type="text" required>
+                                </label>
+                                <label>
+                                    <span>Capacity</span>
+                                    <input name="capacity" type="number" min="1" required>
+                                </label>
+                                <label>
+                                    <span>Status</span>
+                                    <input name="status" type="text" value="Available" required>
+                                </label>
+                                <button type="submit">Create Lab</button>
+                            </form>
+
+                            <form id="equipment-form" class="card form-card">
+                                <h3>Create Equipment</h3>
+                                <label>
+                                    <span>Equipment Name</span>
+                                    <input name="equipment_name" type="text" required>
+                                </label>
+                                <label>
+                                    <span>Lab</span>
+                                    <select id="admin-equipment-lab" name="lab_id"></select>
+                                </label>
+                                <label>
+                                    <span>Category ID</span>
+                                    <input name="category_id" type="number" min="1">
+                                </label>
+                                <label>
+                                    <span>Status</span>
+                                    <input name="status" type="text" value="Available" required>
+                                </label>
+                                <button type="submit">Create Equipment</button>
+                            </form>
+                        </div>
+                        <div class="feature-grid">
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>User Roles</h3>
+                                    <span id="admin-users-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="admin-users" class="stack-list"></div>
+                            </div>
+                            <div class="card">
+                                <div class="card__title-row">
+                                    <h3>Audit Log</h3>
+                                    <span id="audit-count" class="mini-pill">0</span>
+                                </div>
+                                <div id="audit-logs" class="stack-list"></div>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
 </body>
 </html>
-

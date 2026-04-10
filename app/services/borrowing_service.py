@@ -5,9 +5,44 @@ from sqlalchemy.orm import Session
 
 from app.db.models.borrowing import EquipmentBorrowing
 from app.db.models.equipment import Equipment
+from app.db.models.user import User
+from app.schemas.borrowings import BorrowingCreateRequest
 from app.services.audit_service import create_audit_log
 from app.services.notification_service import create_notification
 from app.services.penalty_service import build_penalty
+
+
+def create_borrowing(db: Session, actor_user_id: int, payload: BorrowingCreateRequest) -> EquipmentBorrowing:
+    borrower = db.query(User).filter(User.user_id == payload.user_id, User.is_active.is_(True)).first()
+    if not borrower:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Borrower not found")
+
+    equipment = db.query(Equipment).filter(Equipment.equipment_id == payload.equipment_id).first()
+    if not equipment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Equipment not found")
+    if equipment.status != "Available":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Equipment is not available")
+
+    borrowing = EquipmentBorrowing(
+        user_id=payload.user_id,
+        equipment_id=payload.equipment_id,
+        expected_return=payload.expected_return,
+        status="Borrowed",
+    )
+    equipment.status = "Borrowed"
+    db.add(borrowing)
+    db.flush()
+    create_audit_log(
+        db,
+        "equipment.borrowed",
+        "borrowing",
+        actor_user_id=actor_user_id,
+        target_id=borrowing.borrow_id,
+        details={"borrower_user_id": borrowing.user_id, "equipment_id": borrowing.equipment_id, "status": borrowing.status},
+    )
+    db.commit()
+    db.refresh(borrowing)
+    return borrowing
 
 
 def mark_equipment_returned(db: Session, borrow_id: int, actor_user_id: int) -> EquipmentBorrowing:

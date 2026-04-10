@@ -5,6 +5,14 @@ from fastapi.testclient import TestClient
 from conftest import _clear_app_modules, create_borrowing_graph, create_user, login
 
 
+def test_root_page_contains_workspace_ui(client):
+    response = client.get("/")
+
+    assert response.status_code == 200, response.text
+    assert "Enter The Workspace" in response.text
+    assert "Student Workflows" in response.text
+
+
 def test_registration_assigns_student_role_and_login_returns_csrf(client, db_session, model_bundle):
     response = client.post(
         "/auth/register",
@@ -111,6 +119,56 @@ def test_late_return_creates_penalty_and_audit_log(client, db_session, model_bun
 
     assert float(refreshed_penalty.fine_amount) == 50.0
     assert audit_log.action == "equipment.returned"
+
+
+def test_staff_can_create_and_list_borrowing(client, db_session, model_bundle):
+    staff = create_user(db_session, model_bundle, "Staff", "staff-borrow@example.com")
+    borrower = create_user(db_session, model_bundle, "Student", "student-borrow@example.com")
+
+    Lab = model_bundle["Lab"]
+    Equipment = model_bundle["Equipment"]
+
+    lab = Lab(room_name="D-401", capacity=20, status="Available")
+    db_session.add(lab)
+    db_session.flush()
+
+    equipment = Equipment(equipment_name="Signal Generator", lab_id=lab.lab_id, status="Available")
+    db_session.add(equipment)
+    db_session.commit()
+    db_session.refresh(equipment)
+
+    csrf_token = login(client, staff.email)
+    create_response = client.post(
+        "/borrowings",
+        json={
+            "user_id": borrower.user_id,
+            "equipment_id": equipment.equipment_id,
+            "expected_return": "2026-04-10T18:00:00Z",
+        },
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert create_response.status_code == 201, create_response.text
+    assert create_response.json()["status"] == "Borrowed"
+
+    list_response = client.get("/borrowings?status_filter=Borrowed")
+    assert list_response.status_code == 200, list_response.text
+    assert len(list_response.json()) == 1
+
+
+def test_admin_can_list_users_and_roles(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-directory@example.com")
+    create_user(db_session, model_bundle, "Technician", "tech-directory@example.com")
+
+    login(client, admin.email)
+
+    users_response = client.get("/admin/users")
+    roles_response = client.get("/admin/roles")
+
+    assert users_response.status_code == 200, users_response.text
+    assert len(users_response.json()) >= 2
+    assert roles_response.status_code == 200, roles_response.text
+    assert {role["role_name"] for role in roles_response.json()} == {"Admin", "Staff", "Student", "Technician"}
 
 
 def test_healthz_is_live_even_when_schema_is_missing(tmp_path, monkeypatch):

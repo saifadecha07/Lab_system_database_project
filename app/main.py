@@ -12,7 +12,7 @@ from slowapi.util import get_remote_address
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from app.api.routers import admin, auth, borrowings, equipments, labs, maintenance, notifications, penalties, reservations, staff, users
+from app.api.routers import admin, auth, borrowings, equipments, labs, maintenance, notifications, penalties, reports, reservations, staff, users
 from app.config import get_settings
 from app.db.base import Base
 from app.db import models  # noqa: F401
@@ -92,6 +92,7 @@ app.include_router(penalties.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(staff.router)
+app.include_router(reports.router)
 
 
 @app.get("/", response_class=HTMLResponse)

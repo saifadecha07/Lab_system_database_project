@@ -11,12 +11,40 @@ from app.db.session import get_db
 from app.schemas.audit import AuditLogResponse
 from app.schemas.equipments import EquipmentCreateRequest, EquipmentResponse
 from app.schemas.labs import LabCreateRequest, LabResponse
-from app.schemas.users import UpdateUserRoleRequest, UserResponse
+from app.schemas.users import RoleResponse, UpdateUserRoleRequest, UserResponse
 from app.security.rbac import require_roles
 from app.services.audit_service import create_audit_log
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.get("/users", response_model=list[UserResponse])
+def list_users(
+    _: object = Depends(require_roles("Admin")),
+    db: Session = Depends(get_db),
+):
+    users = db.query(User).options(joinedload(User.role)).order_by(User.created_at.desc()).all()
+    return [
+        UserResponse(
+            user_id=user.user_id,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            role_name=user.role.role_name,
+            is_active=user.is_active,
+            created_at=user.created_at,
+        )
+        for user in users
+    ]
+
+
+@router.get("/roles", response_model=list[RoleResponse])
+def list_roles(
+    _: object = Depends(require_roles("Admin")),
+    db: Session = Depends(get_db),
+):
+    return db.query(Role).order_by(Role.role_name.asc()).all()
 
 
 @router.post("/labs", response_model=LabResponse, status_code=201)
