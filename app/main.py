@@ -99,7 +99,12 @@ app.include_router(reports.router)
 def home(request: Request):
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "app_name": settings.app_name, "client_ip": get_remote_address(request)},
+        {
+            "request": request,
+            "app_name": settings.app_name,
+            "client_ip": get_remote_address(request),
+            "static_version": "20260416-ui-slots",
+        },
     )
 
 
