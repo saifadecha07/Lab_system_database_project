@@ -260,6 +260,13 @@ label span {
     color: var(--muted);
 }
 
+.field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: var(--muted);
+}
+
 input,
 select,
 textarea {
@@ -360,6 +367,52 @@ pre {
 .selection-card p {
     margin: 0;
     color: var(--muted);
+}
+
+.slot-option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.slot-option-button {
+    width: 100%;
+    min-height: 92px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.slot-option-button strong,
+.slot-option-button small {
+    color: inherit;
+}
+
+.slot-option-button--available {
+    background: var(--success-soft);
+    color: #166445;
+}
+
+.slot-option-button--selected {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fffaf4;
+    box-shadow: 0 16px 32px rgba(141, 53, 24, 0.22);
+}
+
+.slot-option-button--busy {
+    background: var(--busy-soft);
+    color: #812929;
+    cursor: not-allowed;
+}
+
+.slot-option-button--unavailable {
+    background: var(--idle-soft);
+    color: #4a555e;
+    cursor: not-allowed;
 }
 
 .reservation-schedule-card {
@@ -529,6 +582,10 @@ pre {
     }
 
     .hero-points {
+        grid-template-columns: 1fr;
+    }
+
+    .slot-option-grid {
         grid-template-columns: 1fr;
     }
 

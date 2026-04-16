@@ -33,6 +33,7 @@ const elements = {
   equipmentForm: document.getElementById("equipment-form"),
   reservationLab: document.getElementById("reservation-lab"),
   reservationSlot: document.getElementById("reservation-slot"),
+  reservationSlotOptions: document.getElementById("reservation-slot-options"),
   reservationSelection: document.getElementById("reservation-selection"),
   reservationSchedule: document.getElementById("reservation-schedule"),
   maintenanceEquipment: document.getElementById("maintenance-equipment"),
@@ -109,6 +110,51 @@ function renderReservationSelection() {
     <strong>${selectedLab.room_name}</strong>
     <p>${formatBookingDate(dateValue)} | รอบ ${selectedSlot.label}</p>
   `;
+}
+
+function renderReservationSlotOptions() {
+  const availability = state.reservationAvailability;
+  const selectedLab = availability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
+
+  if (!selectedLab) {
+    elements.reservationSlotOptions.innerHTML = '<div class="empty-state">ยังไม่มีรอบเวลาให้เลือก</div>';
+    return;
+  }
+
+  elements.reservationSlotOptions.innerHTML = selectedLab.slots
+    .map((slot) => {
+      const isSelected = elements.reservationSlot.value === slot.slot_key;
+      const tone = !slot.is_available && selectedLab.status !== "Available"
+        ? "unavailable"
+        : isSelected
+          ? "selected"
+          : slot.is_available
+            ? "available"
+            : "busy";
+      const helper =
+        tone === "unavailable"
+          ? "ห้องไม่พร้อมใช้งาน"
+          : tone === "busy"
+            ? "รอบนี้ถูกจองแล้ว"
+            : isSelected
+              ? "เลือกรอบนี้แล้ว"
+              : "กดเพื่อเลือกรอบ";
+      const disabled = tone === "busy" || tone === "unavailable" ? "disabled" : "";
+
+      return `
+        <button
+          type="button"
+          class="slot-option-button slot-option-button--${tone}"
+          data-slot-select="${slot.slot_key}"
+          data-lab-id="${selectedLab.lab_id}"
+          ${disabled}
+        >
+          <strong>${slot.label}</strong>
+          <small>${helper}</small>
+        </button>
+      `;
+    })
+    .join("");
 }
 
 function renderReservationSchedule() {
@@ -208,9 +254,11 @@ async function loadReservationAvailability() {
   const selectedLab = availability.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
   const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
   if (!selectedSlot) {
-    elements.reservationSlot.value = "";
+    const firstAvailableSlot = selectedLab?.slots.find((slot) => slot.is_available);
+    elements.reservationSlot.value = firstAvailableSlot?.slot_key || "";
   }
 
+  renderReservationSlotOptions();
   renderReservationSelection();
   renderReservationSchedule();
 }
@@ -712,6 +760,7 @@ document.addEventListener("click", async (event) => {
   if (slotButton) {
     elements.reservationLab.value = slotButton.dataset.labId;
     elements.reservationSlot.value = slotButton.dataset.slotSelect;
+    renderReservationSlotOptions();
     renderReservationSelection();
     renderReservationSchedule();
     return;
@@ -765,8 +814,9 @@ elements.reservationLab.addEventListener("change", () => {
   const selectedLab = state.reservationAvailability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
   const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
   if (!selectedSlot) {
-    elements.reservationSlot.value = "";
+    elements.reservationSlot.value = selectedLab?.slots.find((slot) => slot.is_available)?.slot_key || "";
   }
+  renderReservationSlotOptions();
   renderReservationSelection();
   renderReservationSchedule();
 });
