@@ -19,6 +19,10 @@ class UpdateUserRoleRequest(BaseModel):
     role_name: str
 
 
+class UpdateUserStatusRequest(BaseModel):
+    is_active: bool
+
+
 class RoleResponse(BaseModel):
     role_id: int
     role_name: str

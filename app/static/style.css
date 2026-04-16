@@ -428,9 +428,22 @@ button:active {
 
 .inline-select {
     min-width: 160px;
+    width: auto;
     padding: 8px 12px;
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
+}
+
+.inline-input {
+    min-width: 160px;
+    width: auto;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+}
+
+.inline-input--small {
+    min-width: 110px;
 }
 
 .empty-state {

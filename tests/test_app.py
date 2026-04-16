@@ -245,6 +245,153 @@ def test_admin_can_list_users_and_roles(client, db_session, model_bundle):
     assert {role["role_name"] for role in roles_response.json()} == {"Admin", "Staff", "Student", "Technician"}
 
 
+def test_admin_can_update_and_delete_lab(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-lab-crud@example.com")
+    csrf_token = login(client, admin.email)
+
+    create_response = client.post(
+        "/admin/labs",
+        json={"room_name": "Z-901", "capacity": 10, "status": "Available"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert create_response.status_code == 201, create_response.text
+    lab_id = create_response.json()["lab_id"]
+
+    update_response = client.patch(
+        f"/admin/labs/{lab_id}",
+        json={"room_name": "Z-902", "capacity": 12, "status": "Maintenance"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert update_response.status_code == 200, update_response.text
+    assert update_response.json()["room_name"] == "Z-902"
+    assert update_response.json()["status"] == "Maintenance"
+
+    delete_response = client.delete(
+        f"/admin/labs/{lab_id}",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert delete_response.status_code == 200, delete_response.text
+    assert delete_response.json()["message"] == "Lab deleted"
+
+
+def test_admin_can_update_and_delete_equipment(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-equipment-crud@example.com")
+    csrf_token = login(client, admin.email)
+
+    lab_response = client.post(
+        "/admin/labs",
+        json={"room_name": "Y-801", "capacity": 18, "status": "Available"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert lab_response.status_code == 201, lab_response.text
+    lab_id = lab_response.json()["lab_id"]
+
+    create_response = client.post(
+        "/admin/equipments",
+        json={"equipment_name": "3D Printer", "lab_id": lab_id, "category_id": None, "status": "Available"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert create_response.status_code == 201, create_response.text
+    equipment_id = create_response.json()["equipment_id"]
+
+    update_response = client.patch(
+        f"/admin/equipments/{equipment_id}",
+        json={"equipment_name": "3D Printer Pro", "lab_id": None, "category_id": None, "status": "In_Repair"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert update_response.status_code == 200, update_response.text
+    assert update_response.json()["equipment_name"] == "3D Printer Pro"
+    assert update_response.json()["status"] == "In_Repair"
+
+    delete_response = client.delete(
+        f"/admin/equipments/{equipment_id}",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert delete_response.status_code == 200, delete_response.text
+    assert delete_response.json()["message"] == "Equipment deleted"
+
+
+def test_user_can_mark_notification_read(client, db_session, model_bundle):
+    student = create_user(db_session, model_bundle, "Student", "student-notification@example.com")
+    Notification = importlib.import_module("app.db.models.notification").Notification
+
+    notification = Notification(user_id=student.user_id, message="Unread notice", is_read=False)
+    db_session.add(notification)
+    db_session.commit()
+    db_session.refresh(notification)
+
+    csrf_token = login(client, student.email)
+    response = client.patch(
+        f"/notifications/{notification.notification_id}",
+        json={"is_read": True},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["is_read"] is True
+
+
+def test_admin_can_toggle_user_status(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-status@example.com")
+    student = create_user(db_session, model_bundle, "Student", "student-status@example.com")
+    csrf_token = login(client, admin.email)
+
+    response = client.patch(
+        f"/admin/users/{student.user_id}/status",
+        json={"is_active": False},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["is_active"] is False
+
+
+def test_admin_can_update_and_delete_reservation(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-reservation-crud@example.com")
+    student = create_user(db_session, model_bundle, "Student", "student-reservation-crud@example.com")
+
+    admin_csrf = login(client, admin.email)
+    lab_response = client.post(
+        "/admin/labs",
+        json={"room_name": "R-701", "capacity": 20, "status": "Available"},
+        headers={"X-CSRF-Token": admin_csrf},
+    )
+    assert lab_response.status_code == 201, lab_response.text
+    lab_id = lab_response.json()["lab_id"]
+
+    client.post("/auth/logout", headers={"X-CSRF-Token": admin_csrf})
+    student_csrf = login(client, student.email)
+    create_response = client.post(
+        "/reservations",
+        json={
+            "lab_id": lab_id,
+            "start_time": "2026-04-10T01:00:00Z",
+            "end_time": "2026-04-10T05:00:00Z",
+        },
+        headers={"X-CSRF-Token": student_csrf},
+    )
+    assert create_response.status_code == 201, create_response.text
+    reservation_id = create_response.json()["reservation_id"]
+
+    client.post("/auth/logout", headers={"X-CSRF-Token": student_csrf})
+    admin_csrf = login(client, admin.email)
+
+    update_response = client.patch(
+        f"/reservations/{reservation_id}",
+        json={"status": "Approved"},
+        headers={"X-CSRF-Token": admin_csrf},
+    )
+    assert update_response.status_code == 200, update_response.text
+    assert update_response.json()["status"] == "Approved"
+
+    delete_response = client.delete(
+        f"/reservations/{reservation_id}",
+        headers={"X-CSRF-Token": admin_csrf},
+    )
+    assert delete_response.status_code == 200, delete_response.text
+    assert delete_response.json()["message"] == "Reservation deleted"
+
+
 def test_healthz_is_live_even_when_schema_is_missing(tmp_path, monkeypatch):
     database_path = tmp_path / "missing.db"
     monkeypatch.setenv("APP_ENV", "test")

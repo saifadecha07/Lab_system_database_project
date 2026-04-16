@@ -1,98 +1,171 @@
 # Smart Lab Management System
 
-This repository now contains a security-first FastAPI scaffold for the CN230 Smart Lab project. The goal is to give you a clean backend baseline before you build the full product.
+โปรเจกต์นี้เป็นระบบบริหารจัดการห้องปฏิบัติการและอุปกรณ์สำหรับรายวิชา CN230 โดยพัฒนาเป็นเว็บแอปด้วย FastAPI, SQLAlchemy, PostgreSQL และหน้าเว็บแบบ server-rendered + JavaScript frontend เพื่อให้ผู้ใช้แต่ละบทบาทสามารถจองห้อง ยืมอุปกรณ์ ติดตามงานซ่อม ดูค่าปรับ รับการแจ้งเตือน และดูรายงานจากฐานข้อมูลจริงได้
 
-## What Is Included
+## ขอบเขตระบบ
 
-- FastAPI project structure
-- PostgreSQL-ready SQLAlchemy models
-- Email/password registration and login baseline
-- Session-based authentication for a web app
-- Role-based access control for `Student`, `Staff`, `Technician`, and `Admin`
-- Reservation, maintenance, borrowing, penalty, notification, admin, and reporting route skeletons
-- Railway-ready configuration files
-- Detailed documentation in the `docs/` folder
+ระบบรองรับผู้ใช้ 4 บทบาท
 
-## Project Structure
+- `Student`
+- `Staff`
+- `Technician`
+- `Admin`
+
+ความสามารถหลักของระบบ
+
+- สมัครสมาชิกและเข้าสู่ระบบแบบ session-based authentication
+- ควบคุมสิทธิ์ด้วย role-based access control
+- จองห้องปฏิบัติการแบบ fixed time slots
+- ยืมและคืนอุปกรณ์
+- แจ้งซ่อมและติดตามสถานะงานซ่อม
+- คำนวณค่าปรับจากการคืนอุปกรณ์ล่าช้า
+- แจ้งเตือนผู้ใช้
+- เก็บ audit logs สำหรับ action สำคัญ
+- แสดงรายงาน SQL เชิงวิเคราะห์ 5 รายการ
+
+## Fixed Time Slots สำหรับการจองห้อง
+
+ระบบจองห้องถูกปรับให้จองได้เฉพาะ 3 รอบเวลาเพื่อให้ใช้งานง่ายและตรง requirement ที่ใช้งานจริง
+
+- `08:00-12:00`
+- `12:00-16:00`
+- `16:00-20:00`
+
+หน้า UI แสดงทั้งปุ่มเลือกรอบเวลาและตาราง availability รายวันเพื่อดูว่าห้องไหนว่างหรือถูกจองแล้ว
+
+## โครงสร้างโปรเจกต์
 
 ```text
 app/
-  api/             HTTP routes and dependencies
-  db/              SQLAlchemy base, session, and models
-  schemas/         Request/response validation
-  security/        Hashing, RBAC, sessions, rate limiting
-  services/        Business logic layer
-  static/          Static assets
-  templates/       HTML templates
-docs/              Architecture, security, deployment guides
-migrations/        Alembic migration area
-tests/             Test planning area
+  api/routers/        เส้นทาง API ของแต่ละโมดูล
+  db/models/          ORM models ของฐานข้อมูล
+  schemas/            Pydantic schemas สำหรับ request/response
+  security/           session, CSRF, hashing, RBAC, rate limiting
+  services/           business logic ของระบบ
+  static/             JavaScript และ CSS ของหน้าเว็บ
+  templates/          HTML templates
+docs/                 เอกสารสรุประบบและเอกสารประกอบส่งงาน
+sql/                  schema SQL หลักของฐานข้อมูล
+tests/                automated tests
+create_tables.py      helper script สำหรับ apply schema จาก sql/schema.sql
+Project.pdf           ไฟล์โจทย์งาน
+database_design.pdf   ไฟล์ออกแบบฐานข้อมูลเดิม
 ```
 
-## Local Setup
+## ฐานข้อมูล
 
-1. Install Python 3.11 or newer.
-2. Create and activate a virtual environment.
-3. Install dependencies:
+ตารางหลักของระบบ
+
+- `roles`
+- `users`
+- `lab_types`
+- `labs`
+- `equipment_categories`
+- `equipments`
+- `lab_reservations`
+- `reservation_participants`
+- `equipment_borrowings`
+- `maintenance_records`
+- `penalties`
+- `notifications`
+- `audit_logs`
+
+อ้างอิง schema หลักจาก [sql/schema.sql](/abs/path/C:/Users/saifa/Desktop/cn230/sql/schema.sql:1)
+
+## Advanced Reports
+
+ระบบมีรายงานเชิงวิเคราะห์อย่างน้อย 5 รายการจากฐานข้อมูลจริง
+
+- Late Borrowings
+- Top Borrowers
+- Lab Utilization
+- Equipment Repairs
+- Reservation Summary
+
+## เทคโนโลยีที่ใช้
+
+- Python
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- Alembic
+- Jinja2
+- Vanilla JavaScript
+- CSS
+
+## การติดตั้งและรันในเครื่อง
+
+1. ติดตั้ง Python 3.11 หรือใหม่กว่า
+2. สร้าง virtual environment
+3. ติดตั้ง dependencies
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-4. Create `.env` from `.env.example` and set a real `DATABASE_URL`.
-5. Run migrations:
+4. สร้างไฟล์ `.env` จาก `.env.example`
+5. กำหนดค่า `DATABASE_URL` ให้ชี้ไปยัง PostgreSQL
+6. สร้าง schema ด้วยวิธีใดวิธีหนึ่ง
+
+แบบ Alembic
 
 ```powershell
 alembic upgrade head
 ```
 
-6. Run the app:
+หรือใช้ helper script
+
+```powershell
+python create_tables.py
+```
+
+7. รันแอป
 
 ```powershell
 uvicorn app.main:app --reload
 ```
 
-7. Open:
+8. เปิดใช้งานที่
 
 - `http://127.0.0.1:8000`
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/healthz`
 - `http://127.0.0.1:8000/readyz`
 
-## Railway Setup
+## ความปลอดภัยและการควบคุมสิทธิ์
 
-Set these variables in Railway before deployment:
+ระบบมีองค์ประกอบที่เกิน requirement พื้นฐานของวิชาและใช้ตอบอาจารย์ได้
 
-- `DATABASE_URL`
-- `SECRET_KEY`
-- `APP_ENV=production`
-- `DEBUG=false`
-- `CORS_ORIGINS`
-- `ALLOWED_HOSTS`
+- session authentication
+- CSRF protection สำหรับ browser requests ที่แก้ไขข้อมูล
+- password hashing
+- rate limiting สำหรับ login
+- RBAC ตามบทบาทผู้ใช้
+- audit logging สำหรับ action สำคัญ
+- reservation overlap protection ทั้งระดับ service และ database
 
-Start command:
+## เอกสารสำคัญในโปรเจกต์
 
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
+- [docs/SPEC_COMPLIANCE_AUDIT.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SPEC_COMPLIANCE_AUDIT.md:1)
+- [docs/SPEC_ALIGNMENT_CHANGES.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SPEC_ALIGNMENT_CHANGES.md:1)
+- [docs/PROJECT_SPEC_MAPPING.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/PROJECT_SPEC_MAPPING.md:1)
+- [docs/DATABASE_DESIGN_FINAL.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/DATABASE_DESIGN_FINAL.md:1)
+- [docs/SYSTEM_WALKTHROUGH.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SYSTEM_WALKTHROUGH.md:1)
+- [docs/PRESENTATION_SCRIPT.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/PRESENTATION_SCRIPT.md:1)
 
-## Important Notes
+## สถานะความพร้อมสำหรับส่งงาน
 
-- `/healthz` is a liveness endpoint for the process.
-- `/readyz` checks database connectivity and required schema readiness.
-- Browser-authenticated mutating requests now require the `X-CSRF-Token` header returned after login.
-- Audit logs are recorded for high-risk admin and operational actions, but broader observability is still recommended.
+จุดที่ระบบผ่านชัดเจน
 
-## Documentation
+- เชื่อมฐานข้อมูลจริง
+- มีหลายบทบาทผู้ใช้
+- มี relational schema พร้อม PK/FK/constraints
+- มี DDL และ sample/demo data
+- มี advanced SQL reports อย่างน้อย 5 รายการ
+- มี web interface เชื่อมฐานข้อมูลจริง
+- มี CRUD สำหรับข้อมูลหลักในระดับใช้งานจริงมากขึ้น
 
-- `docs/ARCHITECTURE.md`
-- `docs/SECURITY.md`
-- `docs/RAILWAY_DEPLOYMENT.md`
-- `docs/STAGING_RUNBOOK.md`
-- `docs/RBAC.md`
-- `docs/IMPLEMENTATION_PLAN.md`
-- `docs/PRODUCTION_HARDENING_REPORT.md`
+หมายเหตุ
 
-## Legacy Utility
-
-The old PostgreSQL table creation helper still exists as `create_tables.py`. It is now only a helper script and is no longer the main app entry point.
+- README นี้อัปเดตจาก implementation ปัจจุบัน ไม่ใช่ scaffold เริ่มต้น
+- ถ้าจะส่ง final package ควรใส่รายชื่อสมาชิกและลิงก์วิดีโอเดโมเพิ่มในส่วนท้ายของ README

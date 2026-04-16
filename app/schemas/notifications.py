@@ -3,6 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class NotificationUpdateRequest(BaseModel):
+    is_read: bool = True
+
+
 class NotificationResponse(BaseModel):
     notification_id: int
     user_id: int

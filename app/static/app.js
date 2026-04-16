@@ -443,6 +443,7 @@ function renderCommon(common) {
             <p>${item.message}</p>
             <p>${formatDate(item.created_at)}</p>
           </div>
+          ${!item.is_read ? `<button class="inline-action" data-action="mark-notification-read" data-id="${item.notification_id}">Mark Read</button>` : ""}
         </article>
       `
     )
@@ -523,9 +524,88 @@ function renderMaintenance(queue) {
   );
 }
 
-function renderAdmin(users, auditLogs) {
+function renderAdmin(labs, equipments, reservations, users, auditLogs) {
+  const allLabOptions =
+    optionMarkup("", "Unassigned", true) +
+    labs.map((lab) => optionMarkup(lab.lab_id, lab.room_name)).join("");
+
+  elements.adminEquipmentLab.innerHTML = allLabOptions;
+  setCount("admin-labs-count", labs.length);
+  setCount("admin-equipments-count", equipments.length);
+  setCount("admin-reservations-count", reservations.length);
   setCount("admin-users-count", users.length);
   setCount("audit-count", auditLogs.length);
+
+  renderStack(
+    "admin-labs",
+    labs.map(
+      (lab) => `
+        <article class="list-item list-item--vertical">
+          <div>
+            <strong>${lab.room_name}</strong>
+            <p>Capacity ${lab.capacity} | ${lab.status}</p>
+          </div>
+          <div class="action-cluster">
+            <input class="inline-input" data-lab-room="${lab.lab_id}" value="${lab.room_name}">
+            <input class="inline-input inline-input--small" data-lab-capacity="${lab.lab_id}" type="number" min="1" value="${lab.capacity}">
+            <input class="inline-input inline-input--small" data-lab-status="${lab.lab_id}" value="${lab.status}">
+            <button class="inline-action" data-action="update-lab" data-id="${lab.lab_id}">Update</button>
+            <button class="button-ghost" data-action="delete-lab" data-id="${lab.lab_id}">Delete</button>
+          </div>
+        </article>
+      `
+    )
+  );
+
+  renderStack(
+    "admin-equipments",
+    equipments.map(
+      (equipment) => `
+        <article class="list-item list-item--vertical">
+          <div>
+            <strong>${equipment.equipment_name}</strong>
+            <p>Lab ${equipment.lab_id ?? "Unassigned"} | Category ${equipment.category_id ?? "Unassigned"} | ${equipment.status}</p>
+          </div>
+          <div class="action-cluster">
+            <input class="inline-input" data-equipment-name="${equipment.equipment_id}" value="${equipment.equipment_name}">
+            <select class="inline-select" data-equipment-lab="${equipment.equipment_id}">
+              ${allLabOptions}
+            </select>
+            <input class="inline-input inline-input--small" data-equipment-category="${equipment.equipment_id}" type="number" min="1" value="${equipment.category_id ?? ""}" placeholder="Category">
+            <input class="inline-input inline-input--small" data-equipment-status="${equipment.equipment_id}" value="${equipment.status}">
+            <button class="inline-action" data-action="update-equipment" data-id="${equipment.equipment_id}">Update</button>
+            <button class="button-ghost" data-action="delete-equipment" data-id="${equipment.equipment_id}">Delete</button>
+          </div>
+        </article>
+      `
+    )
+  );
+
+  equipments.forEach((equipment) => {
+    const select = document.querySelector(`[data-equipment-lab="${equipment.equipment_id}"]`);
+    if (select) select.value = equipment.lab_id == null ? "" : String(equipment.lab_id);
+  });
+
+  renderStack(
+    "admin-reservations",
+    reservations.map(
+      (reservation) => `
+        <article class="list-item list-item--vertical">
+          <div>
+            <strong>Reservation #${reservation.reservation_id}</strong>
+            <p>Lab ${reservation.lab_id} | User ${reservation.reserved_by}</p>
+            <p>${formatDate(reservation.start_time)} to ${formatDate(reservation.end_time)}</p>
+          </div>
+          <div class="action-cluster">
+            <input class="inline-input inline-input--small" data-reservation-status="${reservation.reservation_id}" value="${reservation.status}">
+            <button class="inline-action" data-action="update-reservation-status" data-id="${reservation.reservation_id}">Update</button>
+            <button class="button-ghost" data-action="delete-reservation" data-id="${reservation.reservation_id}">Delete</button>
+          </div>
+        </article>
+      `
+    )
+  );
+
   renderStack(
     "admin-users",
     users.map((user) => {
@@ -544,6 +624,9 @@ function renderAdmin(users, auditLogs) {
               ${options}
             </select>
             <button class="inline-action" data-action="update-role" data-id="${user.user_id}">Update Role</button>
+            <button class="button-ghost" data-action="toggle-user-status" data-id="${user.user_id}" data-active="${user.is_active}">
+              ${user.is_active ? "Deactivate" : "Activate"}
+            </button>
           </div>
         </article>
       `;
@@ -626,18 +709,21 @@ async function refreshDashboard() {
   }
 
   if (flags.admin) {
-    const [adminUsers, roles, auditLogs] = await Promise.all([
+    const [adminLabs, adminEquipments, adminReservations, adminUsers, roles, auditLogs] = await Promise.all([
+      api("/admin/labs"),
+      api("/admin/equipments"),
+      api("/reservations"),
       api("/admin/users"),
       api("/admin/roles"),
       api("/admin/audit-logs"),
     ]);
     state.roles = roles;
-    renderAdmin(adminUsers, auditLogs);
+    renderCommon(common);
+    renderAdmin(adminLabs, adminEquipments, adminReservations, adminUsers, auditLogs);
   } else {
     state.roles = [];
+    renderCommon(common);
   }
-
-  renderCommon(common);
   await loadReservationAvailability();
   renderOverview(common, staffSummary);
   setFlash("Workspace synced.", "success");
@@ -789,6 +875,62 @@ document.addEventListener("click", async (event) => {
         method: "PATCH",
         body: { role_name: select.value },
       });
+    }
+    if (action === "toggle-user-status") {
+      await api(`/admin/users/${button.dataset.id}/status`, {
+        method: "PATCH",
+        body: { is_active: button.dataset.active !== "true" },
+      });
+    }
+    if (action === "mark-notification-read") {
+      await api(`/notifications/${button.dataset.id}`, {
+        method: "PATCH",
+        body: { is_read: true },
+      });
+    }
+    if (action === "update-lab") {
+      const roomInput = document.querySelector(`[data-lab-room="${button.dataset.id}"]`);
+      const capacityInput = document.querySelector(`[data-lab-capacity="${button.dataset.id}"]`);
+      const statusInput = document.querySelector(`[data-lab-status="${button.dataset.id}"]`);
+      await api(`/admin/labs/${button.dataset.id}`, {
+        method: "PATCH",
+        body: {
+          room_name: roomInput.value,
+          capacity: Number(capacityInput.value),
+          status: statusInput.value,
+        },
+      });
+    }
+    if (action === "delete-lab") {
+      await api(`/admin/labs/${button.dataset.id}`, { method: "DELETE" });
+    }
+    if (action === "update-equipment") {
+      const nameInput = document.querySelector(`[data-equipment-name="${button.dataset.id}"]`);
+      const labSelect = document.querySelector(`[data-equipment-lab="${button.dataset.id}"]`);
+      const categoryInput = document.querySelector(`[data-equipment-category="${button.dataset.id}"]`);
+      const statusInput = document.querySelector(`[data-equipment-status="${button.dataset.id}"]`);
+      await api(`/admin/equipments/${button.dataset.id}`, {
+        method: "PATCH",
+        body: {
+          equipment_name: nameInput.value,
+          lab_id: labSelect.value ? Number(labSelect.value) : null,
+          category_id: categoryInput.value ? Number(categoryInput.value) : null,
+          status: statusInput.value,
+        },
+      });
+    }
+    if (action === "delete-equipment") {
+      await api(`/admin/equipments/${button.dataset.id}`, { method: "DELETE" });
+    }
+    if (action === "update-reservation-status") {
+      const statusInput = document.querySelector(`[data-reservation-status="${button.dataset.id}"]`);
+      await api(`/reservations/${button.dataset.id}`, {
+        method: "PATCH",
+        body: { status: statusInput.value },
+      });
+    }
+    if (action === "delete-reservation") {
+      await api(`/reservations/${button.dataset.id}`, { method: "DELETE" });
     }
     await loadCurrentUser();
     await refreshDashboard();

@@ -59,6 +59,10 @@ class ReservationCancelRequest(BaseModel):
     reason: str = Field(default="User cancelled", max_length=255)
 
 
+class ReservationUpdateRequest(BaseModel):
+    status: str = Field(min_length=1, max_length=50)
+
+
 class ReservationSlotAvailability(BaseModel):
     slot_key: str
     label: str
