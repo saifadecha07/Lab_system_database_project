@@ -5,6 +5,14 @@ const state = {
   csrfToken: null,
   currentUser: null,
   roles: [],
+  reservationAvailability: null,
+};
+
+const BOOKING_TIMEZONE = "Asia/Bangkok";
+const FIXED_SLOT_DEFS = {
+  morning: { label: "08:00-12:00", start: "08:00:00", end: "12:00:00" },
+  afternoon: { label: "12:00-16:00", start: "12:00:00", end: "16:00:00" },
+  evening: { label: "16:00-20:00", start: "16:00:00", end: "20:00:00" },
 };
 
 const elements = {
@@ -18,11 +26,15 @@ const elements = {
   loginForm: document.getElementById("login-form"),
   registerForm: document.getElementById("register-form"),
   reservationForm: document.getElementById("reservation-form"),
+  reservationDate: document.getElementById("reservation-date"),
   maintenanceForm: document.getElementById("maintenance-form"),
   borrowingForm: document.getElementById("borrowing-form"),
   labForm: document.getElementById("lab-form"),
   equipmentForm: document.getElementById("equipment-form"),
   reservationLab: document.getElementById("reservation-lab"),
+  reservationSlot: document.getElementById("reservation-slot"),
+  reservationSelection: document.getElementById("reservation-selection"),
+  reservationSchedule: document.getElementById("reservation-schedule"),
   maintenanceEquipment: document.getElementById("maintenance-equipment"),
   borrowingEquipment: document.getElementById("borrowing-equipment"),
   borrowingUser: document.getElementById("borrowing-user"),
@@ -39,7 +51,11 @@ function setFlash(message, tone = "idle") {
 
 function formatDate(value) {
   if (!value) return "N/A";
-  return new Date(value).toLocaleString();
+  return new Intl.DateTimeFormat("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: BOOKING_TIMEZONE,
+  }).format(new Date(value));
 }
 
 function formatRole(roleName) {
@@ -48,6 +64,155 @@ function formatRole(roleName) {
 
 function toIso(localValue) {
   return new Date(localValue).toISOString();
+}
+
+function todayInBookingTimezone() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: BOOKING_TIMEZONE,
+  }).format(new Date());
+}
+
+function fixedSlotToIso(dateValue, slotKey, edge) {
+  const slot = FIXED_SLOT_DEFS[slotKey];
+  if (!slot || !dateValue) return null;
+  const timeValue = edge === "start" ? slot.start : slot.end;
+  return new Date(`${dateValue}T${timeValue}+07:00`).toISOString();
+}
+
+function formatBookingDate(dateValue) {
+  return new Intl.DateTimeFormat("th-TH", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: BOOKING_TIMEZONE,
+  }).format(new Date(`${dateValue}T00:00:00+07:00`));
+}
+
+function renderReservationSelection() {
+  const dateValue = elements.reservationDate.value;
+  const labId = Number(elements.reservationLab.value);
+  const slotKey = elements.reservationSlot.value;
+  const availability = state.reservationAvailability;
+  const selectedLab = availability?.labs.find((lab) => lab.lab_id === labId);
+  const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === slotKey && slot.is_available);
+
+  if (!dateValue || !selectedLab || !selectedSlot) {
+    elements.reservationSelection.innerHTML = `
+      <strong>ยังไม่ได้เลือกรอบเวลา</strong>
+      <p>รอบที่เปิดให้จอง: 08:00-12:00, 12:00-16:00, 16:00-20:00</p>
+    `;
+    return;
+  }
+
+  elements.reservationSelection.innerHTML = `
+    <strong>${selectedLab.room_name}</strong>
+    <p>${formatBookingDate(dateValue)} | รอบ ${selectedSlot.label}</p>
+  `;
+}
+
+function renderReservationSchedule() {
+  const availability = state.reservationAvailability;
+  if (!availability) {
+    elements.reservationSchedule.innerHTML = '<div class="empty-state">กำลังโหลดตารางจอง...</div>';
+    return;
+  }
+
+  if (!availability.labs.length) {
+    elements.reservationSchedule.innerHTML = '<div class="empty-state">ยังไม่มีห้องในระบบ</div>';
+    return;
+  }
+
+  const header = availability.slots.map((slot) => `<th>${slot.label}</th>`).join("");
+  const bodyRows = availability.labs
+    .map((lab) => {
+      const slotCells = lab.slots
+        .map((slot) => {
+          const isSelected =
+            Number(elements.reservationLab.value) === lab.lab_id && elements.reservationSlot.value === slot.slot_key;
+          const tone = !slot.is_available && lab.status !== "Available"
+            ? "unavailable"
+            : isSelected
+              ? "selected"
+              : slot.is_available
+                ? "available"
+                : "busy";
+          const label =
+            tone === "unavailable"
+              ? "ห้องไม่พร้อม"
+              : tone === "busy"
+                ? "จองแล้ว"
+                : isSelected
+                  ? "เลือกรอบนี้แล้ว"
+                  : "กดเพื่อเลือก";
+          const disabled = tone === "busy" || tone === "unavailable" ? "disabled" : "";
+
+          return `
+            <td>
+              <button
+                type="button"
+                class="slot-button slot-button--${tone}"
+                data-slot-select="${slot.slot_key}"
+                data-lab-id="${lab.lab_id}"
+                ${disabled}
+              >
+                <strong>${slot.label}</strong>
+                <small>${label}</small>
+              </button>
+            </td>
+          `;
+        })
+        .join("");
+
+      return `
+        <tr>
+          <td class="lab-cell">
+            <strong>${lab.room_name}</strong>
+            <div class="lab-meta">ความจุ ${lab.capacity} คน | ${lab.status}</div>
+          </td>
+          ${slotCells}
+        </tr>
+      `;
+    })
+    .join("");
+
+  elements.reservationSchedule.innerHTML = `
+    <div class="schedule-table">
+      <table>
+        <thead>
+          <tr>
+            <th>ห้อง</th>
+            ${header}
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function loadReservationAvailability() {
+  const dateValue = elements.reservationDate.value || todayInBookingTimezone();
+  if (!elements.reservationDate.value) {
+    elements.reservationDate.value = dateValue;
+  }
+
+  const availability = await api(`/reservations/availability?booking_date=${dateValue}`);
+  state.reservationAvailability = availability;
+
+  const selectedLabStillExists = availability.labs.some((lab) => lab.lab_id === Number(elements.reservationLab.value));
+  if (!selectedLabStillExists && availability.labs.length) {
+    elements.reservationLab.value = String(availability.labs[0].lab_id);
+  }
+
+  const selectedLab = availability.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
+  const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
+  if (!selectedSlot) {
+    elements.reservationSlot.value = "";
+  }
+
+  renderReservationSelection();
+  renderReservationSchedule();
 }
 
 function renderStack(containerId, entries) {
@@ -138,6 +303,7 @@ function renderOverview(common, staffSummary) {
 }
 
 function renderCommon(common) {
+  const labNameById = new Map(common.labs.map((lab) => [lab.lab_id, lab.room_name]));
   setCount("labs-count", common.labs.length);
   setCount("equipment-count", common.equipments.length);
   setCount("my-reservations-count", common.reservations.length);
@@ -180,7 +346,7 @@ function renderCommon(common) {
         <article class="list-item">
           <div>
             <strong>Reservation #${item.reservation_id}</strong>
-            <p>Lab ${item.lab_id} | ${formatDate(item.start_time)} to ${formatDate(item.end_time)}</p>
+            <p>${labNameById.get(item.lab_id) || `Lab ${item.lab_id}`} | ${formatDate(item.start_time)} to ${formatDate(item.end_time)}</p>
             <p>Status ${item.status}</p>
           </div>
           ${item.status !== "Cancelled" ? `<button class="inline-action" data-action="cancel-reservation" data-id="${item.reservation_id}">Cancel</button>` : ""}
@@ -424,6 +590,7 @@ async function refreshDashboard() {
   }
 
   renderCommon(common);
+  await loadReservationAvailability();
   renderOverview(common, staffSummary);
   setFlash("Workspace synced.", "success");
 }
@@ -462,11 +629,19 @@ bindSubmit(
 
 bindSubmit(
   elements.reservationForm,
-  (formData) => ({
-    lab_id: Number(formData.get("lab_id")),
-    start_time: toIso(formData.get("start_time")),
-    end_time: toIso(formData.get("end_time")),
-  }),
+  (formData) => {
+    const reservationDate = formData.get("reservation_date");
+    const slotKey = formData.get("slot_key");
+    if (!reservationDate || !slotKey) {
+      throw new Error("Please select a booking date and one fixed time slot.");
+    }
+
+    return {
+      lab_id: Number(formData.get("lab_id")),
+      start_time: fixedSlotToIso(reservationDate, slotKey, "start"),
+      end_time: fixedSlotToIso(reservationDate, slotKey, "end"),
+    };
+  },
   { path: "/reservations", method: "POST" }
 );
 
@@ -533,6 +708,15 @@ elements.logoutButton.addEventListener("click", async () => {
 });
 
 document.addEventListener("click", async (event) => {
+  const slotButton = event.target.closest("[data-slot-select]");
+  if (slotButton) {
+    elements.reservationLab.value = slotButton.dataset.labId;
+    elements.reservationSlot.value = slotButton.dataset.slotSelect;
+    renderReservationSelection();
+    renderReservationSchedule();
+    return;
+  }
+
   const button = event.target.closest("[data-action]");
   if (!button) return;
 
@@ -562,6 +746,29 @@ document.addEventListener("click", async (event) => {
   } catch (error) {
     setFlash(error.message, "error");
   }
+});
+
+elements.reservationDate.addEventListener("change", async () => {
+  if (!state.currentUser) return;
+
+  try {
+    setFlash("Updating booking schedule...", "busy");
+    elements.reservationSlot.value = "";
+    await loadReservationAvailability();
+    setFlash("Booking schedule updated.", "success");
+  } catch (error) {
+    setFlash(error.message, "error");
+  }
+});
+
+elements.reservationLab.addEventListener("change", () => {
+  const selectedLab = state.reservationAvailability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
+  const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
+  if (!selectedSlot) {
+    elements.reservationSlot.value = "";
+  }
+  renderReservationSelection();
+  renderReservationSchedule();
 });
 
 // ---------------------------------------------------------------------------

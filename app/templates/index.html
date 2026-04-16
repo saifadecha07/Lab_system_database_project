@@ -13,9 +13,23 @@
                 <p class="eyebrow">CN230 Smart Lab Platform</p>
                 <h1>{{ app_name }}</h1>
                 <p class="lede">
-                    Role-aware operations cockpit for reservations, maintenance, borrowing,
-                    penalties, notifications, and administrative controls.
+                    จองห้อง แลป แจ้งซ่อม และติดตามสถานะงานต่าง ๆ ได้จากหน้าเดียว
+                    โดยออกแบบให้เห็นข้อมูลสำคัญและเลือกทำงานได้เร็วขึ้น
                 </p>
+                <div class="hero-points">
+                    <div class="hero-point">
+                        <strong>จองง่าย</strong>
+                        <span>เลือกวัน แล้วกดจองตามรอบเวลาได้ทันที</span>
+                    </div>
+                    <div class="hero-point">
+                        <strong>เข้าใจง่าย</strong>
+                        <span>แยกงานหลักเป็นบล็อกชัดเจน ลดการกรอกข้อมูลที่ไม่จำเป็น</span>
+                    </div>
+                    <div class="hero-point">
+                        <strong>เห็นสถานะเร็ว</strong>
+                        <span>ดูห้องว่าง ห้องเต็ม และรายการของตัวเองได้ในหน้าเดียว</span>
+                    </div>
+                </div>
             </div>
             <div class="masthead__status">
                 <div class="badge-stack">
@@ -92,7 +106,7 @@
                     <div class="panel__header">
                         <div>
                             <p class="section-kicker">Overview</p>
-                            <h2>System Pulse</h2>
+                            <h2>ภาพรวมการใช้งาน</h2>
                         </div>
                     </div>
                     <div id="overview-cards" class="stats-grid"></div>
@@ -135,20 +149,24 @@
                         </div>
                         <div class="feature-grid">
                             <form id="reservation-form" class="card form-card">
-                                <h3>Create Reservation</h3>
+                                <h3>จองห้องแบบรอบเวลา</h3>
+                                <p class="card-intro">
+                                    เลือกวันที่แล้วกดรอบเวลาที่ต้องการจากตารางด้านล่าง ระบบจะกำหนดเวลาให้อัตโนมัติ
+                                </p>
                                 <label>
-                                    <span>Lab</span>
+                                    <span>วันที่ต้องการจอง</span>
+                                    <input id="reservation-date" name="reservation_date" type="date" required>
+                                </label>
+                                <label>
+                                    <span>ห้อง</span>
                                     <select id="reservation-lab" name="lab_id" required></select>
                                 </label>
-                                <label>
-                                    <span>Start</span>
-                                    <input name="start_time" type="datetime-local" required>
-                                </label>
-                                <label>
-                                    <span>End</span>
-                                    <input name="end_time" type="datetime-local" required>
-                                </label>
-                                <button type="submit">Reserve Lab</button>
+                                <input id="reservation-slot" name="slot_key" type="hidden" required>
+                                <div id="reservation-selection" class="selection-card">
+                                    <strong>ยังไม่ได้เลือกรอบเวลา</strong>
+                                    <p>รอบที่เปิดให้จอง: 08:00-12:00, 12:00-16:00, 16:00-20:00</p>
+                                </div>
+                                <button type="submit">ยืนยันการจอง</button>
                             </form>
 
                             <form id="maintenance-form" class="card form-card">
@@ -163,6 +181,21 @@
                                 </label>
                                 <button type="submit">Submit Report</button>
                             </form>
+                        </div>
+                        <div class="card reservation-schedule-card">
+                            <div class="card__title-row">
+                                <div>
+                                    <h3>ตารางเวลาการจองห้อง</h3>
+                                    <p class="card-intro">กดที่ช่องสีเขียวเพื่อเลือกรอบจอง ห้องที่ไม่พร้อมใช้งานหรือถูกรอบอื่นจองแล้วจะถูกปิดไว้</p>
+                                </div>
+                            </div>
+                            <div class="schedule-legend">
+                                <span class="legend-pill legend-pill--available">ว่าง</span>
+                                <span class="legend-pill legend-pill--selected">ที่เลือก</span>
+                                <span class="legend-pill legend-pill--busy">ถูกจองแล้ว</span>
+                                <span class="legend-pill legend-pill--unavailable">ห้องไม่พร้อมใช้งาน</span>
+                            </div>
+                            <div id="reservation-schedule" class="reservation-schedule"></div>
                         </div>
                         <div class="feature-grid">
                             <div class="card">

@@ -78,8 +78,8 @@ def test_reservation_overlap_is_rejected(client, db_session, model_bundle):
         "/reservations",
         json={
             "lab_id": lab_id,
-            "start_time": "2026-04-10T09:00:00Z",
-            "end_time": "2026-04-10T11:00:00Z",
+            "start_time": "2026-04-10T01:00:00Z",
+            "end_time": "2026-04-10T05:00:00Z",
         },
         headers={"X-CSRF-Token": student_csrf},
     )
@@ -89,14 +89,88 @@ def test_reservation_overlap_is_rejected(client, db_session, model_bundle):
         "/reservations",
         json={
             "lab_id": lab_id,
-            "start_time": "2026-04-10T10:00:00Z",
-            "end_time": "2026-04-10T12:00:00Z",
+            "start_time": "2026-04-10T01:00:00Z",
+            "end_time": "2026-04-10T05:00:00Z",
         },
         headers={"X-CSRF-Token": student_csrf},
     )
 
     assert second_response.status_code == 409
     assert second_response.json()["detail"] == "Reservation time overlaps existing booking"
+
+
+def test_reservation_rejects_non_fixed_slots(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-fixed-slot@example.com")
+    student = create_user(db_session, model_bundle, "Student", "student-fixed-slot@example.com")
+
+    admin_csrf = login(client, admin.email)
+    lab_response = client.post(
+        "/admin/labs",
+        json={"room_name": "C-302", "capacity": 40, "status": "Available"},
+        headers={"X-CSRF-Token": admin_csrf},
+    )
+    assert lab_response.status_code == 201, lab_response.text
+    lab_id = lab_response.json()["lab_id"]
+
+    client.post("/auth/logout", headers={"X-CSRF-Token": admin_csrf})
+
+    student_csrf = login(client, student.email)
+    response = client.post(
+        "/reservations",
+        json={
+            "lab_id": lab_id,
+            "start_time": "2026-04-10T02:00:00Z",
+            "end_time": "2026-04-10T06:00:00Z",
+        },
+        headers={"X-CSRF-Token": student_csrf},
+    )
+
+    assert response.status_code == 422
+    assert "fixed slots" in response.text
+
+
+def test_reservation_availability_groups_slots_by_booking_date(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-availability@example.com")
+    student = create_user(db_session, model_bundle, "Student", "student-availability@example.com")
+
+    admin_csrf = login(client, admin.email)
+    first_lab = client.post(
+        "/admin/labs",
+        json={"room_name": "L-101", "capacity": 24, "status": "Available"},
+        headers={"X-CSRF-Token": admin_csrf},
+    ).json()
+    second_lab = client.post(
+        "/admin/labs",
+        json={"room_name": "L-102", "capacity": 32, "status": "Maintenance"},
+        headers={"X-CSRF-Token": admin_csrf},
+    ).json()
+    client.post("/auth/logout", headers={"X-CSRF-Token": admin_csrf})
+
+    student_csrf = login(client, student.email)
+    reservation_response = client.post(
+        "/reservations",
+        json={
+            "lab_id": first_lab["lab_id"],
+            "start_time": "2026-04-10T01:00:00Z",
+            "end_time": "2026-04-10T05:00:00Z",
+        },
+        headers={"X-CSRF-Token": student_csrf},
+    )
+    assert reservation_response.status_code == 201, reservation_response.text
+
+    response = client.get("/reservations/availability?booking_date=2026-04-10")
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["timezone"] == "Asia/Bangkok"
+    assert [slot["label"] for slot in payload["slots"]] == ["08:00-12:00", "12:00-16:00", "16:00-20:00"]
+
+    first_lab_slots = next(lab["slots"] for lab in payload["labs"] if lab["lab_id"] == first_lab["lab_id"])
+    second_lab_slots = next(lab["slots"] for lab in payload["labs"] if lab["lab_id"] == second_lab["lab_id"])
+
+    assert first_lab_slots[0]["is_available"] is False
+    assert first_lab_slots[1]["is_available"] is True
+    assert second_lab_slots[0]["is_available"] is False
 
 
 def test_late_return_creates_penalty_and_audit_log(client, db_session, model_bundle):

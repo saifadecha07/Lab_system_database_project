@@ -1,13 +1,18 @@
 :root {
-    --bg: #f3efe7;
-    --panel: rgba(255, 250, 240, 0.88);
-    --ink: #182126;
-    --muted: #5c666d;
-    --line: rgba(24, 33, 38, 0.12);
-    --accent: #a64b2a;
-    --accent-strong: #7d2d14;
-    --highlight: #1e6b64;
+    --bg: #f4efe6;
+    --panel: rgba(255, 251, 245, 0.88);
+    --panel-strong: rgba(255, 248, 238, 0.96);
+    --ink: #1b2228;
+    --muted: #5f6a72;
+    --line: rgba(27, 34, 40, 0.12);
+    --accent: #b4532f;
+    --accent-strong: #8d3518;
+    --highlight: #1a756d;
     --shadow: 0 30px 80px rgba(29, 37, 44, 0.12);
+    --success-soft: rgba(23, 135, 87, 0.14);
+    --selected-soft: rgba(180, 83, 47, 0.16);
+    --busy-soft: rgba(165, 52, 52, 0.14);
+    --idle-soft: rgba(27, 34, 40, 0.06);
 }
 
 * {
@@ -120,6 +125,29 @@ h3 {
     line-height: 1.7;
 }
 
+.hero-points {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.hero-point {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(180, 83, 47, 0.16);
+    background: rgba(255, 255, 255, 0.58);
+}
+
+.hero-point span,
+.card-intro {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
 .badge-stack,
 .profile-band__actions,
 .card__title-row,
@@ -211,6 +239,10 @@ h3 {
 .stat-card {
     border-radius: 22px;
     padding: 20px;
+}
+
+.card {
+    background: var(--panel-strong);
 }
 
 .form-card {
@@ -316,6 +348,146 @@ pre {
     color: var(--muted);
 }
 
+.selection-card {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(27, 34, 40, 0.04);
+    border: 1px solid var(--line);
+}
+
+.selection-card p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.reservation-schedule-card {
+    display: grid;
+    gap: 16px;
+}
+
+.schedule-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.legend-pill {
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    border: 1px solid transparent;
+}
+
+.legend-pill--available {
+    background: var(--success-soft);
+    color: #166445;
+}
+
+.legend-pill--selected {
+    background: var(--selected-soft);
+    color: var(--accent-strong);
+}
+
+.legend-pill--busy {
+    background: var(--busy-soft);
+    color: #812929;
+}
+
+.legend-pill--unavailable {
+    background: var(--idle-soft);
+    color: #4a555e;
+}
+
+.reservation-schedule {
+    display: grid;
+    gap: 12px;
+}
+
+.schedule-table {
+    overflow-x: auto;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.schedule-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.schedule-table th,
+.schedule-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+.schedule-table th {
+    background: rgba(27, 34, 40, 0.04);
+    font-size: 0.84rem;
+    color: var(--muted);
+}
+
+.schedule-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.lab-cell {
+    min-width: 210px;
+}
+
+.lab-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.slot-button {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid transparent;
+    padding: 14px 14px 12px;
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.slot-button strong {
+    color: inherit;
+}
+
+.slot-button small {
+    opacity: 0.8;
+}
+
+.slot-button--available {
+    background: var(--success-soft);
+    color: #166445;
+}
+
+.slot-button--selected {
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #fffaf4;
+    box-shadow: 0 16px 32px rgba(141, 53, 24, 0.22);
+}
+
+.slot-button--busy {
+    background: var(--busy-soft);
+    color: #812929;
+    cursor: not-allowed;
+}
+
+.slot-button--unavailable {
+    background: var(--idle-soft);
+    color: #4a555e;
+    cursor: not-allowed;
+}
+
 .stat-card {
     display: grid;
     gap: 10px;
@@ -356,6 +528,10 @@ pre {
         grid-template-columns: 1fr;
     }
 
+    .hero-points {
+        grid-template-columns: 1fr;
+    }
+
     .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -382,6 +558,10 @@ pre {
     .metric-row {
         flex-direction: column;
         align-items: start;
+    }
+
+    .schedule-legend {
+        gap: 8px;
     }
 
     .stats-grid {

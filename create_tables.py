@@ -1,16 +1,12 @@
-import os
-import sys
-
 import psycopg2
 
+# 1. ใส่ Connection URL ที่ได้จาก Railway
+# (เปลี่ยนข้อความในเครื่องหมายคำพูดเป็นลิงก์ของอาจารย์เอง)
+DATABASE_URL = "postgresql://postgres:ehAtBtPRZKyqVQZgzYUWMoOBUIrmntMF@maglev.proxy.rlwy.net:23763/railway"
 
-DEFAULT_DATABASE_URL = (
-    "postgresql://postgres:xxxxxxxx@junction.proxy.rlwy.net:xxxxx/railway"
-)
-
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
-
-SQL_COMMANDS = """
+# 2. เตรียมชุดคำสั่ง SQL (DDL) ทั้ง 12 ตาราง
+sql_commands = """
+-- ตารางข้อมูลอ้างอิง
 CREATE TABLE IF NOT EXISTS roles (
     role_id SERIAL PRIMARY KEY,
     role_name VARCHAR(50) UNIQUE NOT NULL
@@ -26,6 +22,7 @@ CREATE TABLE IF NOT EXISTS lab_types (
     type_name VARCHAR(100) UNIQUE NOT NULL
 );
 
+-- ตารางข้อมูลหลัก
 CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     role_id INT REFERENCES roles(role_id),
@@ -50,6 +47,7 @@ CREATE TABLE IF NOT EXISTS equipments (
     status VARCHAR(50) NOT NULL DEFAULT 'Available'
 );
 
+-- ตารางธุรกรรม
 CREATE TABLE IF NOT EXISTS lab_reservations (
     reservation_id SERIAL PRIMARY KEY,
     lab_id INT REFERENCES labs(lab_id),
@@ -86,6 +84,7 @@ CREATE TABLE IF NOT EXISTS maintenance_records (
     status VARCHAR(50) NOT NULL DEFAULT 'Reported'
 );
 
+-- ตารางฟีเจอร์ขั้นสูง
 CREATE TABLE IF NOT EXISTS penalties (
     penalty_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id),
@@ -103,37 +102,27 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 """
 
+# 3. เริ่มกระบวนการเชื่อมต่อและสั่งรัน
+try:
+    print("กำลังเชื่อมต่อไปยังฐานข้อมูล Railway...")
+    # เชื่อมต่อ Database
+    conn = psycopg2.connect(DATABASE_URL)
+    
+    # สร้าง Cursor (ตัวแทนของเราที่ทำหน้าที่เอาคำสั่ง SQL ไปวางรันในฐานข้อมูล)
+    cur = conn.cursor()
+    
+    print("กำลังสร้างตารางทั้ง 12 ตาราง...")
+    # สั่งรันคำสั่ง SQL
+    cur.execute(sql_commands)
+    
+    # ยืนยันการเปลี่ยนแปลง (Commit) ถ้าไม่ใส่บรรทัดนี้ ตารางจะไม่ถูกบันทึกจริง
+    conn.commit()
+    
+    # ปิดการเชื่อมต่อ
+    cur.close()
+    conn.close()
+    print("✅ สร้างตารางสำเร็จเรียบร้อยแล้ว! กลับไปกด Refresh ดูที่หน้าเว็บ Railway ได้เลยครับ")
 
-def validate_database_url(database_url: str) -> None:
-    if database_url == DEFAULT_DATABASE_URL:
-        raise ValueError(
-            "DATABASE_URL is still using the placeholder value. "
-            "Set the real Railway/PostgreSQL connection string first."
-        )
-
-    if "xxxxxxxx" in database_url or "xxxxx" in database_url:
-        raise ValueError(
-            "DATABASE_URL still contains placeholder parts (xxxxxxxx / xxxxx)."
-        )
-
-
-def main() -> int:
-    try:
-        validate_database_url(DATABASE_URL)
-        print("Connecting to PostgreSQL...")
-
-        with psycopg2.connect(DATABASE_URL, connect_timeout=5) as conn:
-            with conn.cursor() as cur:
-                print("Creating tables...")
-                cur.execute(SQL_COMMANDS)
-
-        print("Tables created successfully.")
-        return 0
-    except Exception as error:
-        print("Failed to create tables:")
-        print(error)
-        return 1
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+except Exception as e:
+    print("❌ เกิดข้อผิดพลาด:")
+    print(e)
