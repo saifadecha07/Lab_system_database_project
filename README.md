@@ -45,11 +45,10 @@ app/
   static/             JavaScript และ CSS ของหน้าเว็บ
   templates/          HTML templates
 docs/                 เอกสารสรุประบบและเอกสารประกอบส่งงาน
+  reference/          ไฟล์โจทย์งาน, แบบฐานข้อมูล, และไฟล์อ้างอิงต้นฉบับ
 sql/                  schema SQL หลักของฐานข้อมูล
+scripts/              helper scripts สำหรับ seed data และ setup ฐานข้อมูล
 tests/                automated tests
-create_tables.py      helper script สำหรับ apply schema จาก sql/schema.sql
-Project.pdf           ไฟล์โจทย์งาน
-database_design.pdf   ไฟล์ออกแบบฐานข้อมูลเดิม
 ```
 
 ## ฐานข้อมูล
@@ -116,7 +115,7 @@ alembic upgrade head
 หรือใช้ helper script
 
 ```powershell
-python create_tables.py
+python scripts/create_tables.py
 ```
 
 7. รันแอป
