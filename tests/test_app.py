@@ -99,6 +99,44 @@ def test_reservation_overlap_is_rejected(client, db_session, model_bundle):
     assert second_response.json()["detail"] == "Reservation time overlaps existing booking"
 
 
+def test_reservation_response_serializes_in_booking_timezone(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-reservation-timezone@example.com")
+    student = create_user(db_session, model_bundle, "Student", "student-reservation-timezone@example.com")
+
+    admin_csrf = login(client, admin.email)
+    lab_response = client.post(
+        "/admin/labs",
+        json={"room_name": "C-303", "capacity": 30, "status": "Available"},
+        headers={"X-CSRF-Token": admin_csrf},
+    )
+    assert lab_response.status_code == 201, lab_response.text
+    lab_id = lab_response.json()["lab_id"]
+
+    client.post("/auth/logout", headers={"X-CSRF-Token": admin_csrf})
+
+    student_csrf = login(client, student.email)
+    create_response = client.post(
+        "/reservations",
+        json={
+            "lab_id": lab_id,
+            "start_time": "2026-04-10T01:00:00Z",
+            "end_time": "2026-04-10T05:00:00Z",
+        },
+        headers={"X-CSRF-Token": student_csrf},
+    )
+
+    assert create_response.status_code == 201, create_response.text
+    payload = create_response.json()
+    assert payload["start_time"] == "2026-04-10T08:00:00+07:00"
+    assert payload["end_time"] == "2026-04-10T12:00:00+07:00"
+
+    my_reservations_response = client.get("/reservations/my")
+    assert my_reservations_response.status_code == 200, my_reservations_response.text
+    listed = my_reservations_response.json()[0]
+    assert listed["start_time"] == "2026-04-10T08:00:00+07:00"
+    assert listed["end_time"] == "2026-04-10T12:00:00+07:00"
+
+
 def test_reservation_rejects_non_fixed_slots(client, db_session, model_bundle):
     admin = create_user(db_session, model_bundle, "Admin", "admin-fixed-slot@example.com")
     student = create_user(db_session, model_bundle, "Student", "student-fixed-slot@example.com")
@@ -228,6 +266,87 @@ def test_staff_can_create_and_list_borrowing(client, db_session, model_bundle):
     list_response = client.get("/borrowings?status_filter=Borrowed")
     assert list_response.status_code == 200, list_response.text
     assert len(list_response.json()) == 1
+
+
+def test_invalid_lab_status_is_rejected(client, db_session, model_bundle):
+    admin = create_user(db_session, model_bundle, "Admin", "admin-invalid-lab-status@example.com")
+    csrf_token = login(client, admin.email)
+
+    response = client.post(
+        "/admin/labs",
+        json={"room_name": "X-501", "capacity": 20, "status": "available"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 422, response.text
+
+
+def test_maintenance_on_borrowed_equipment_keeps_borrowed_until_return(client, db_session, model_bundle):
+    staff = create_user(db_session, model_bundle, "Staff", "staff-maintenance-borrowed@example.com")
+    borrower = create_user(db_session, model_bundle, "Student", "borrower-maintenance-borrowed@example.com")
+    borrowing, equipment = create_borrowing_graph(db_session, model_bundle, borrower.user_id)
+
+    csrf_token = login(client, borrower.email)
+    report_response = client.post(
+        "/maintenance",
+        json={"equipment_id": equipment.equipment_id, "issue_detail": "Display flickers during use"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert report_response.status_code == 201, report_response.text
+
+    db_session.refresh(equipment)
+    assert equipment.status == "Borrowed"
+
+    staff_csrf = login(client, staff.email)
+    return_response = client.patch(
+        f"/borrowings/{borrowing.borrow_id}/return",
+        headers={"X-CSRF-Token": staff_csrf},
+    )
+    assert return_response.status_code == 200, return_response.text
+
+    db_session.refresh(equipment)
+    assert equipment.status == "In_Repair"
+
+
+def test_cannot_borrow_equipment_with_open_maintenance(client, db_session, model_bundle):
+    staff = create_user(db_session, model_bundle, "Staff", "staff-open-maintenance@example.com")
+    borrower = create_user(db_session, model_bundle, "Student", "borrower-open-maintenance@example.com")
+
+    Lab = model_bundle["Lab"]
+    Equipment = model_bundle["Equipment"]
+    MaintenanceRecord = model_bundle["MaintenanceRecord"]
+
+    lab = Lab(room_name="M-601", capacity=20, status="Available")
+    db_session.add(lab)
+    db_session.flush()
+
+    equipment = Equipment(equipment_name="Thermal Camera", lab_id=lab.lab_id, status="In_Repair")
+    db_session.add(equipment)
+    db_session.flush()
+
+    report = MaintenanceRecord(
+        equipment_id=equipment.equipment_id,
+        reported_by=borrower.user_id,
+        issue_detail="Lens calibration failed",
+        status="Reported",
+    )
+    db_session.add(report)
+    db_session.commit()
+    db_session.refresh(equipment)
+
+    csrf_token = login(client, staff.email)
+    response = client.post(
+        "/borrowings",
+        json={
+            "user_id": borrower.user_id,
+            "equipment_id": equipment.equipment_id,
+            "expected_return": "2026-04-10T18:00:00Z",
+        },
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 409, response.text
+    assert response.json()["detail"] in {"Equipment is not available", "Equipment is under maintenance"}
 
 
 def test_admin_can_list_users_and_roles(client, db_session, model_bundle):
