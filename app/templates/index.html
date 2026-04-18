@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,21 +13,20 @@
                 <p class="eyebrow">CN230 Smart Lab Platform</p>
                 <h1>{{ app_name }}</h1>
                 <p class="lede">
-                    จองห้อง แลป แจ้งซ่อม และติดตามสถานะงานต่าง ๆ ได้จากหน้าเดียว
-                    โดยออกแบบให้เห็นข้อมูลสำคัญและเลือกทำงานได้เร็วขึ้น
+                    ระบบเดียวสำหรับจองห้องแล็บ ยืมอุปกรณ์ แจ้งซ่อม และติดตามรายการของตัวเองแบบอ่านง่าย ใช้งานเป็นลำดับ
                 </p>
                 <div class="hero-points">
                     <div class="hero-point">
-                        <strong>จองง่าย</strong>
-                        <span>เลือกวัน แล้วกดจองตามรอบเวลาได้ทันที</span>
+                        <strong>จองได้เร็ว</strong>
+                        <span>เลือกวัน เลือกห้อง แล้วกดรอบเวลาที่ว่างจากตารางเดียวได้ทันที</span>
                     </div>
                     <div class="hero-point">
-                        <strong>เข้าใจง่าย</strong>
-                        <span>แยกงานหลักเป็นบล็อกชัดเจน ลดการกรอกข้อมูลที่ไม่จำเป็น</span>
+                        <strong>เห็นสถานะชัด</strong>
+                        <span>รู้ได้ทันทีว่าห้องไหนว่าง อุปกรณ์ไหนถูกยืม หรือรายการไหนอยู่ระหว่างซ่อม</span>
                     </div>
                     <div class="hero-point">
-                        <strong>เห็นสถานะเร็ว</strong>
-                        <span>ดูห้องว่าง ห้องเต็ม และรายการของตัวเองได้ในหน้าเดียว</span>
+                        <strong>ติดตามงานง่าย</strong>
+                        <span>รายการจอง การยืม ค่าปรับ และการแจ้งเตือนอยู่รวมในหน้าเดียว</span>
                     </div>
                 </div>
             </div>
@@ -37,7 +36,7 @@
                     <a class="badge badge--link" href="/healthz">Health</a>
                     <a class="badge badge--link" href="/docs">API Docs</a>
                 </div>
-                <div id="flash" class="flash flash--idle">Ready</div>
+                <div id="flash" class="flash flash--idle">พร้อมใช้งาน</div>
             </div>
         </header>
 
@@ -46,45 +45,45 @@
                 <div class="panel__header">
                     <div>
                         <p class="section-kicker">Access</p>
-                        <h2>Enter The Workspace</h2>
+                        <h2>เข้าสู่ระบบ</h2>
                     </div>
                     <p class="panel__summary">
-                        Register as a student or sign in to unlock operator and admin tools by role.
+                        สมัครบัญชีแบบ Student หรือเข้าสู่ระบบด้วยบัญชีที่มีอยู่เพื่อใช้งานตามสิทธิ์ของคุณ
                     </p>
                 </div>
                 <div class="auth-grid">
                     <form id="login-form" class="card form-card">
-                        <h3>Login</h3>
+                        <h3>เข้าสู่ระบบ</h3>
                         <label>
-                            <span>Email</span>
+                            <span>อีเมล</span>
                             <input name="email" type="email" autocomplete="email" required>
                         </label>
                         <label>
-                            <span>Password</span>
+                            <span>รหัสผ่าน</span>
                             <input name="password" type="password" autocomplete="current-password" required>
                         </label>
-                        <button type="submit">Login</button>
+                        <button type="submit">เข้าสู่ระบบ</button>
                     </form>
 
                     <form id="register-form" class="card form-card">
-                        <h3>Create Student Account</h3>
+                        <h3>สมัครบัญชี Student</h3>
                         <label>
-                            <span>First Name</span>
+                            <span>ชื่อ</span>
                             <input name="first_name" type="text" autocomplete="given-name" required>
                         </label>
                         <label>
-                            <span>Last Name</span>
+                            <span>นามสกุล</span>
                             <input name="last_name" type="text" autocomplete="family-name" required>
                         </label>
                         <label>
-                            <span>Email</span>
+                            <span>อีเมล</span>
                             <input name="email" type="email" autocomplete="email" required>
                         </label>
                         <label>
-                            <span>Password</span>
+                            <span>รหัสผ่าน</span>
                             <input name="password" type="password" autocomplete="new-password" minlength="12" required>
                         </label>
-                        <button type="submit">Register</button>
+                        <button type="submit">สมัครใช้งาน</button>
                     </form>
                 </div>
             </section>
@@ -97,8 +96,26 @@
                         <p id="session-meta" class="panel__summary"></p>
                     </div>
                     <div class="profile-band__actions">
-                        <button id="refresh-button" class="button-secondary" type="button">Refresh Data</button>
-                        <button id="logout-button" class="button-ghost" type="button">Logout</button>
+                        <button id="refresh-button" class="button-secondary" type="button">รีเฟรชข้อมูล</button>
+                        <button id="logout-button" class="button-ghost" type="button">ออกจากระบบ</button>
+                    </div>
+                </section>
+
+                <section class="panel quick-nav-panel">
+                    <div class="panel__header">
+                        <div>
+                            <p class="section-kicker">Quick Actions</p>
+                            <h2>ไปยังงานที่ต้องใช้ทันที</h2>
+                        </div>
+                        <p class="panel__summary">กดข้ามไปยังส่วนที่ต้องการใช้งานได้ทันที ไม่ต้องไล่เลื่อนหานาน</p>
+                    </div>
+                    <div class="quick-nav">
+                        <a class="quick-nav__item" href="#reservation-section">จองห้อง</a>
+                        <a class="quick-nav__item" href="#maintenance-section">แจ้งซ่อม</a>
+                        <a class="quick-nav__item" href="#my-items-section">รายการของฉัน</a>
+                        <a class="quick-nav__item" href="#operator-panel">งานเจ้าหน้าที่</a>
+                        <a class="quick-nav__item" href="#technician-panel">คิวช่าง</a>
+                        <a class="quick-nav__item" href="#admin-panel">จัดการระบบ</a>
                     </div>
                 </section>
 
@@ -116,21 +133,21 @@
                     <div class="panel__header">
                         <div>
                             <p class="section-kicker">Directory</p>
-                            <h2>Resources</h2>
+                            <h2>ทรัพยากรที่พร้อมใช้งาน</h2>
                         </div>
-                        <p class="panel__summary">Shared catalog of labs and equipment available to the current user.</p>
+                        <p class="panel__summary">ดูห้องและอุปกรณ์ที่เปิดให้ใช้งานในระบบตอนนี้</p>
                     </div>
                     <div class="resource-grid">
                         <div class="card">
                             <div class="card__title-row">
-                                <h3>Labs</h3>
+                                <h3>ห้องแล็บ</h3>
                                 <span id="labs-count" class="mini-pill">0</span>
                             </div>
                             <div id="labs-list" class="stack-list"></div>
                         </div>
                         <div class="card">
                             <div class="card__title-row">
-                                <h3>Equipment</h3>
+                                <h3>อุปกรณ์</h3>
                                 <span id="equipment-count" class="mini-pill">0</span>
                             </div>
                             <div id="equipment-list" class="stack-list"></div>
@@ -139,19 +156,32 @@
                 </section>
 
                 <section class="workspace-grid">
-                    <section class="panel">
+                    <section id="reservation-section" class="panel">
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Self Service</p>
-                                <h2>Student Workflows</h2>
+                                <h2>งานที่ผู้ใช้ทำเองได้</h2>
                             </div>
-                            <p class="panel__summary">Available to any authenticated user for personal tasks.</p>
+                            <p class="panel__summary">จองห้อง แจ้งซ่อม และติดตามรายการของตัวเองจากส่วนนี้</p>
                         </div>
+
+                        <div class="card workflow-card">
+                            <div class="card__title-row">
+                                <h3>วิธีจองห้อง</h3>
+                            </div>
+                            <div class="workflow-steps">
+                                <div class="workflow-step"><strong>1</strong><span>เลือกวันที่ต้องการใช้งาน</span></div>
+                                <div class="workflow-step"><strong>2</strong><span>เลือกห้องจากรายการ</span></div>
+                                <div class="workflow-step"><strong>3</strong><span>กดเลือกรอบเวลาที่ว่าง</span></div>
+                                <div class="workflow-step"><strong>4</strong><span>ตรวจสอบแล้วกดยืนยัน</span></div>
+                            </div>
+                        </div>
+
                         <div class="feature-grid">
-                            <form id="reservation-form" class="card form-card">
+                            <form id="reservation-form" class="card form-card form-card--primary">
                                 <h3>จองห้องแบบรอบเวลา</h3>
                                 <p class="card-intro">
-                                    เลือกวันที่แล้วกดรอบเวลาที่ต้องการจากตารางด้านล่าง ระบบจะกำหนดเวลาให้อัตโนมัติ
+                                    ระบบรองรับ 3 รอบเวลา: 08:00-12:00, 12:00-16:00 และ 16:00-20:00
                                 </p>
                                 <label>
                                     <span>วันที่ต้องการจอง</span>
@@ -168,50 +198,57 @@
                                 <input id="reservation-slot" name="slot_key" type="hidden" required>
                                 <div id="reservation-selection" class="selection-card">
                                     <strong>ยังไม่ได้เลือกรอบเวลา</strong>
-                                    <p>รอบที่เปิดให้จอง: 08:00-12:00, 12:00-16:00, 16:00-20:00</p>
+                                    <p>เลือกรอบเวลาจากปุ่มด้านบน หรือกดเลือกจากตารางด้านล่าง</p>
                                 </div>
                                 <button type="submit">ยืนยันการจอง</button>
                             </form>
 
-                            <form id="maintenance-form" class="card form-card">
-                                <h3>Report Maintenance</h3>
-                                <label>
-                                    <span>Equipment</span>
-                                    <select id="maintenance-equipment" name="equipment_id" required></select>
-                                </label>
-                                <label>
-                                    <span>Issue Detail</span>
-                                    <textarea name="issue_detail" rows="4" minlength="5" required></textarea>
-                                </label>
-                                <button type="submit">Submit Report</button>
-                            </form>
+                            <section id="maintenance-section" class="card form-card">
+                                <h3>แจ้งซ่อมอุปกรณ์</h3>
+                                <p class="card-intro">
+                                    ใช้เมื่อพบว่าอุปกรณ์เปิดไม่ติด เสียหาย หรือทำงานผิดปกติ เพื่อให้ช่างเห็นคิวซ่อมทันที
+                                </p>
+                                <form id="maintenance-form" class="form-card__inner">
+                                    <label>
+                                        <span>อุปกรณ์</span>
+                                        <select id="maintenance-equipment" name="equipment_id" required></select>
+                                    </label>
+                                    <label>
+                                        <span>รายละเอียดปัญหา</span>
+                                        <textarea name="issue_detail" rows="4" minlength="5" placeholder="อธิบายอาการที่พบให้ชัดเจน" required></textarea>
+                                    </label>
+                                    <button type="submit">ส่งแจ้งซ่อม</button>
+                                </form>
+                            </section>
                         </div>
+
                         <div class="card reservation-schedule-card">
                             <div class="card__title-row">
                                 <div>
-                                    <h3>ตารางเวลาการจองห้อง</h3>
-                                    <p class="card-intro">กดที่ช่องสีเขียวเพื่อเลือกรอบจอง ห้องที่ไม่พร้อมใช้งานหรือถูกรอบอื่นจองแล้วจะถูกปิดไว้</p>
+                                    <h3>ตารางห้องและรอบเวลาที่จองได้</h3>
+                                    <p class="card-intro">สีเขียวคือว่าง สีแดงคือมีคนจองแล้ว สีเทาคือห้องไม่พร้อมใช้งาน</p>
                                 </div>
                             </div>
                             <div class="schedule-legend">
                                 <span class="legend-pill legend-pill--available">ว่าง</span>
                                 <span class="legend-pill legend-pill--selected">ที่เลือก</span>
                                 <span class="legend-pill legend-pill--busy">ถูกจองแล้ว</span>
-                                <span class="legend-pill legend-pill--unavailable">ห้องไม่พร้อมใช้งาน</span>
+                                <span class="legend-pill legend-pill--unavailable">ห้องไม่พร้อม</span>
                             </div>
                             <div id="reservation-schedule" class="reservation-schedule"></div>
                         </div>
-                        <div class="feature-grid">
+
+                        <div id="my-items-section" class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>My Reservations</h3>
+                                    <h3>รายการจองของฉัน</h3>
                                     <span id="my-reservations-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="my-reservations" class="stack-list"></div>
                             </div>
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>My Borrowings</h3>
+                                    <h3>รายการยืมของฉัน</h3>
                                     <span id="my-borrowings-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="my-borrowings" class="stack-list"></div>
@@ -220,14 +257,14 @@
                         <div class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Penalties</h3>
+                                    <h3>ค่าปรับ</h3>
                                     <span id="my-penalties-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="my-penalties" class="stack-list"></div>
                             </div>
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Notifications</h3>
+                                    <h3>การแจ้งเตือน</h3>
                                     <span id="my-notifications-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="my-notifications" class="stack-list"></div>
@@ -239,37 +276,37 @@
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Operations</p>
-                                <h2>Staff Desk</h2>
+                                <h2>งานเจ้าหน้าที่</h2>
                             </div>
-                            <p class="panel__summary">Borrowing control and system summary for Staff and Admin users.</p>
+                            <p class="panel__summary">สร้างรายการยืม ติดตามการคืน และเปิดรายงานสรุปได้จากส่วนนี้</p>
                         </div>
                         <div class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Operational Summary</h3>
+                                    <h3>สรุปภาพรวม</h3>
                                 </div>
                                 <div id="staff-summary" class="metric-list"></div>
                             </div>
                             <form id="borrowing-form" class="card form-card">
-                                <h3>Create Borrowing</h3>
+                                <h3>สร้างรายการยืมอุปกรณ์</h3>
                                 <label>
-                                    <span>User</span>
+                                    <span>ผู้ยืม</span>
                                     <select id="borrowing-user" name="user_id" required></select>
                                 </label>
                                 <label>
-                                    <span>Equipment</span>
+                                    <span>อุปกรณ์</span>
                                     <select id="borrowing-equipment" name="equipment_id" required></select>
                                 </label>
                                 <label>
-                                    <span>Expected Return</span>
+                                    <span>กำหนดคืน</span>
                                     <input name="expected_return" type="datetime-local" required>
                                 </label>
-                                <button type="submit">Issue Equipment</button>
+                                <button type="submit">ยืนยันการยืม</button>
                             </form>
                         </div>
                         <div class="card">
                             <div class="card__title-row">
-                                <h3>Borrowing Queue</h3>
+                                <h3>รายการยืมที่กำลังใช้งาน</h3>
                                 <span id="active-borrowings-count" class="mini-pill">0</span>
                             </div>
                             <div id="active-borrowings" class="stack-list"></div>
@@ -277,17 +314,17 @@
 
                         <div class="card report-card">
                             <div class="card__title-row">
-                                <h3>Advanced Reports</h3>
+                                <h3>รายงานสรุป</h3>
                             </div>
                             <p style="color:var(--muted);font-size:0.85rem;margin:0 0 12px;">
-                                Complex multi-table queries (JOIN, GROUP BY, HAVING, EXTRACT).
+                                ใช้ดูข้อมูลสรุปจากหลายตาราง เช่น การยืมล่าช้า การใช้งานห้อง และประวัติการจอง
                             </p>
                             <div class="report-btn-row">
-                                <button class="button-secondary" data-report="late-borrowings">Late Borrowings</button>
-                                <button class="button-secondary" data-report="top-borrowers">Top Borrowers</button>
-                                <button class="button-secondary" data-report="lab-utilization">Lab Utilisation</button>
-                                <button class="button-secondary" data-report="equipment-repairs">Equipment Repairs</button>
-                                <button class="button-secondary" data-report="reservation-summary">Reservation Summary</button>
+                                <button class="button-secondary" data-report="late-borrowings">รายการยืมล่าช้า</button>
+                                <button class="button-secondary" data-report="top-borrowers">ผู้ยืมสูงสุด</button>
+                                <button class="button-secondary" data-report="lab-utilization">การใช้งานห้อง</button>
+                                <button class="button-secondary" data-report="equipment-repairs">ประวัติซ่อมอุปกรณ์</button>
+                                <button class="button-secondary" data-report="reservation-summary">สรุปรายการจอง</button>
                             </div>
                             <div id="report-output" class="report-output"></div>
                         </div>
@@ -297,13 +334,13 @@
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Repair</p>
-                                <h2>Maintenance Queue</h2>
+                                <h2>คิวงานซ่อม</h2>
                             </div>
-                            <p class="panel__summary">Technician and Admin users can transition equipment back into service.</p>
+                            <p class="panel__summary">ติดตามรายการแจ้งซ่อมและเปลี่ยนสถานะงานได้จากจุดนี้</p>
                         </div>
                         <div class="card">
                             <div class="card__title-row">
-                                <h3>Open Tickets</h3>
+                                <h3>งานซ่อมที่เปิดอยู่</h3>
                                 <span id="maintenance-count" class="mini-pill">0</span>
                             </div>
                             <div id="maintenance-queue" class="stack-list"></div>
@@ -314,36 +351,41 @@
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Administration</p>
-                                <h2>Control Room</h2>
+                                <h2>จัดการระบบ</h2>
                             </div>
-                            <p class="panel__summary">Labs, equipment, user roles, and audit logs for Admin users.</p>
+                            <p class="panel__summary">เพิ่มและแก้ไขห้อง อุปกรณ์ สิทธิ์ผู้ใช้ และตรวจสอบ audit log</p>
                         </div>
                         <div class="feature-grid">
                             <form id="lab-form" class="card form-card">
-                                <h3>Create Lab</h3>
+                                <h3>เพิ่มห้องใหม่</h3>
                                 <label>
-                                    <span>Room Name</span>
+                                    <span>ชื่อห้อง</span>
                                     <input name="room_name" type="text" required>
                                 </label>
                                 <label>
-                                    <span>Capacity</span>
+                                    <span>ความจุ</span>
                                     <input name="capacity" type="number" min="1" required>
                                 </label>
                                 <label>
-                                    <span>Status</span>
-                                    <input name="status" type="text" value="Available" required>
+                                    <span>สถานะ</span>
+                                    <select name="status" required>
+                                        <option value="Available" selected>Available</option>
+                                        <option value="Reserved">Reserved</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                        <option value="Closed">Closed</option>
+                                    </select>
                                 </label>
-                                <button type="submit">Create Lab</button>
+                                <button type="submit">เพิ่มห้อง</button>
                             </form>
 
                             <form id="equipment-form" class="card form-card">
-                                <h3>Create Equipment</h3>
+                                <h3>เพิ่มอุปกรณ์ใหม่</h3>
                                 <label>
-                                    <span>Equipment Name</span>
+                                    <span>ชื่ออุปกรณ์</span>
                                     <input name="equipment_name" type="text" required>
                                 </label>
                                 <label>
-                                    <span>Lab</span>
+                                    <span>ห้อง</span>
                                     <select id="admin-equipment-lab" name="lab_id"></select>
                                 </label>
                                 <label>
@@ -351,23 +393,27 @@
                                     <input name="category_id" type="number" min="1">
                                 </label>
                                 <label>
-                                    <span>Status</span>
-                                    <input name="status" type="text" value="Available" required>
+                                    <span>สถานะ</span>
+                                    <select name="status" required>
+                                        <option value="Available" selected>Available</option>
+                                        <option value="Borrowed">Borrowed</option>
+                                        <option value="In_Repair">In_Repair</option>
+                                    </select>
                                 </label>
-                                <button type="submit">Create Equipment</button>
+                                <button type="submit">เพิ่มอุปกรณ์</button>
                             </form>
                         </div>
                         <div class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Manage Labs</h3>
+                                    <h3>จัดการห้อง</h3>
                                     <span id="admin-labs-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="admin-labs" class="stack-list"></div>
                             </div>
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Manage Equipment</h3>
+                                    <h3>จัดการอุปกรณ์</h3>
                                     <span id="admin-equipments-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="admin-equipments" class="stack-list"></div>
@@ -376,14 +422,14 @@
                         <div class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>Manage Reservations</h3>
+                                    <h3>จัดการรายการจอง</h3>
                                     <span id="admin-reservations-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="admin-reservations" class="stack-list"></div>
                             </div>
                             <div class="card">
                                 <div class="card__title-row">
-                                    <h3>User Roles</h3>
+                                    <h3>สิทธิ์ผู้ใช้</h3>
                                     <span id="admin-users-count" class="mini-pill">0</span>
                                 </div>
                                 <div id="admin-users" class="stack-list"></div>
