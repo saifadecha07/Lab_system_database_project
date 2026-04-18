@@ -76,6 +76,7 @@ def model_bundle():
     lab_module = importlib.import_module("app.db.models.lab")
     equipment_module = importlib.import_module("app.db.models.equipment")
     borrowing_module = importlib.import_module("app.db.models.borrowing")
+    maintenance_module = importlib.import_module("app.db.models.maintenance")
     penalty_module = importlib.import_module("app.db.models.penalty")
     audit_module = importlib.import_module("app.db.models.audit_log")
     hashing_module = importlib.import_module("app.security.hashing")
@@ -85,6 +86,7 @@ def model_bundle():
         "Lab": lab_module.Lab,
         "Equipment": equipment_module.Equipment,
         "EquipmentBorrowing": borrowing_module.EquipmentBorrowing,
+        "MaintenanceRecord": maintenance_module.MaintenanceRecord,
         "Penalty": penalty_module.Penalty,
         "AuditLog": audit_module.AuditLog,
         "hash_password": hashing_module.hash_password,
