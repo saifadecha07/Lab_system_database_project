@@ -6,25 +6,32 @@ from sqlalchemy.orm import Session
 from app.db.models.equipment import Equipment
 from app.db.models.maintenance import MaintenanceRecord
 from app.db.models.user import User
+from app.domain.constants import MaintenanceStatus
 from app.schemas.maintenance import MaintenanceCreateRequest
 from app.services.audit_service import create_audit_log
+from app.services.equipment_state_service import resolve_equipment_status
 from app.services.notification_service import create_notification
 
 
 def create_maintenance_report(db: Session, current_user: User, payload: MaintenanceCreateRequest) -> MaintenanceRecord:
-    equipment = db.query(Equipment).filter(Equipment.equipment_id == payload.equipment_id).first()
+    equipment = (
+        db.query(Equipment)
+        .filter(Equipment.equipment_id == payload.equipment_id)
+        .with_for_update()
+        .first()
+    )
     if not equipment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Equipment not found")
 
-    equipment.status = "In_Repair"
     record = MaintenanceRecord(
         equipment_id=payload.equipment_id,
         reported_by=current_user.user_id,
         issue_detail=payload.issue_detail,
-        status="Reported",
+        status=MaintenanceStatus.REPORTED,
     )
     db.add(record)
     db.flush()
+    equipment.status = resolve_equipment_status(db, equipment.equipment_id)
     create_audit_log(
         db,
         "maintenance.reported",
@@ -43,16 +50,23 @@ def update_maintenance_status(db: Session, repair_id: int, technician_id: int, n
     if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Maintenance record not found")
 
-    equipment = db.query(Equipment).filter(Equipment.equipment_id == record.equipment_id).first()
+    equipment = (
+        db.query(Equipment)
+        .filter(Equipment.equipment_id == record.equipment_id)
+        .with_for_update()
+        .first()
+    )
     if not equipment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Equipment not found")
 
     record.technician_id = technician_id
     record.status = new_status
-    if new_status == "Fixed":
+    if new_status == MaintenanceStatus.FIXED:
         record.resolved_date = datetime.now(timezone.utc)
-        equipment.status = "Available"
         create_notification(db, record.reported_by, "Your maintenance request has been completed.")
+    else:
+        record.resolved_date = None
+    equipment.status = resolve_equipment_status(db, equipment.equipment_id)
     create_audit_log(
         db,
         "maintenance.updated",
