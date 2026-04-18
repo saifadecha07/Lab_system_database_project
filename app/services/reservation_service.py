@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import and_
@@ -13,13 +13,14 @@ from app.schemas.reservations import (
     FIXED_RESERVATION_SLOTS,
     ReservationAvailabilityResponse,
     ReservationCreateRequest,
+    to_utc_timezone,
 )
 
 
 def _normalize_for_compare(value: datetime) -> datetime:
     if value.tzinfo:
         return value.astimezone(BOOKING_TIMEZONE)
-    return value.replace(tzinfo=BOOKING_TIMEZONE)
+    return value.replace(tzinfo=timezone.utc).astimezone(BOOKING_TIMEZONE)
 
 
 def create_reservation(db: Session, current_user: User, payload: ReservationCreateRequest) -> LabReservation:
@@ -42,8 +43,8 @@ def create_reservation(db: Session, current_user: User, payload: ReservationCrea
     reservation = LabReservation(
         lab_id=payload.lab_id,
         reserved_by=current_user.user_id,
-        start_time=payload.start_time,
-        end_time=payload.end_time,
+        start_time=to_utc_timezone(payload.start_time),
+        end_time=to_utc_timezone(payload.end_time),
         status="Pending",
     )
     db.add(reservation)
