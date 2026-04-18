@@ -1,7 +1,9 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_serializer, model_validator
+
+from app.domain.constants import ReservationStatus
 
 BOOKING_TIMEZONE = ZoneInfo("Asia/Bangkok")
 FIXED_RESERVATION_SLOTS = (
@@ -14,7 +16,13 @@ FIXED_RESERVATION_SLOTS = (
 def to_booking_timezone(value: datetime) -> datetime:
     if value.tzinfo:
         return value.astimezone(BOOKING_TIMEZONE)
-    return value.replace(tzinfo=BOOKING_TIMEZONE)
+    return value.replace(tzinfo=timezone.utc).astimezone(BOOKING_TIMEZONE)
+
+
+def to_utc_timezone(value: datetime) -> datetime:
+    if value.tzinfo:
+        return value.astimezone(timezone.utc)
+    return value.replace(tzinfo=BOOKING_TIMEZONE).astimezone(timezone.utc)
 
 
 def resolve_fixed_slot(start_time: datetime, end_time: datetime) -> dict:
@@ -50,9 +58,13 @@ class ReservationResponse(BaseModel):
     reserved_by: int
     start_time: datetime
     end_time: datetime
-    status: str
+    status: ReservationStatus
 
     model_config = {"from_attributes": True}
+
+    @field_serializer("start_time", "end_time")
+    def serialize_booking_time(self, value: datetime) -> str:
+        return to_booking_timezone(value).isoformat()
 
 
 class ReservationCancelRequest(BaseModel):
@@ -60,7 +72,7 @@ class ReservationCancelRequest(BaseModel):
 
 
 class ReservationUpdateRequest(BaseModel):
-    status: str = Field(min_length=1, max_length=50)
+    status: ReservationStatus
 
 
 class ReservationSlotAvailability(BaseModel):
@@ -70,6 +82,10 @@ class ReservationSlotAvailability(BaseModel):
     end_time: datetime
     is_available: bool
     reservation_id: int | None = None
+
+    @field_serializer("start_time", "end_time")
+    def serialize_slot_time(self, value: datetime) -> str:
+        return to_booking_timezone(value).isoformat()
 
 
 class LabReservationAvailability(BaseModel):
