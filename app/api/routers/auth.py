@@ -30,7 +30,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=MessageResponse)
-@limiter.limit("5/minute")
+@limiter.limit(settings.rate_limit_login)
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     user = authenticate_user(db, payload.email, payload.password)
     start_user_session(request, user.user_id)
@@ -54,4 +54,3 @@ def me(current_user=Depends(get_current_user)):
         is_active=current_user.is_active,
         created_at=current_user.created_at,
     )
-
