@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.domain.constants import MaintenanceStatus
+
 
 class MaintenanceCreateRequest(BaseModel):
     equipment_id: int
@@ -9,7 +11,7 @@ class MaintenanceCreateRequest(BaseModel):
 
 
 class MaintenanceUpdateRequest(BaseModel):
-    status: str = Field(min_length=1, max_length=50)
+    status: MaintenanceStatus
 
 
 class MaintenanceResponse(BaseModel):
@@ -20,7 +22,6 @@ class MaintenanceResponse(BaseModel):
     report_date: datetime
     resolved_date: datetime | None
     issue_detail: str
-    status: str
+    status: MaintenanceStatus
 
     model_config = {"from_attributes": True}
-
