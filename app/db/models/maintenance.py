@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -14,8 +14,7 @@ class MaintenanceRecord(TimestampMixin, Base):
     equipment_id: Mapped[int] = mapped_column(ForeignKey("equipments.equipment_id"), nullable=False, index=True)
     reported_by: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
     technician_id: Mapped[int | None] = mapped_column(ForeignKey("users.user_id"), nullable=True)
-    report_date: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
-    resolved_date: Mapped[datetime | None] = mapped_column(nullable=True)
+    report_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    resolved_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     issue_detail: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="Reported", nullable=False, index=True)
-
