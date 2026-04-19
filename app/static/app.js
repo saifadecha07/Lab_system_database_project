@@ -959,7 +959,14 @@ function bindSubmit(form, buildPayload, request, options = {}) {
 bindSubmit(
   elements.loginForm,
   (formData) => ({ email: formData.get("email"), password: formData.get("password") }),
-  { path: "/auth/login", method: "POST" }
+  { path: "/auth/login", method: "POST" },
+  {
+    afterLoadCurrentUser: () => {
+      if (!state.currentUser) {
+        throw new Error("Login completed but session was not created");
+      }
+    },
+  }
 );
 
 bindSubmit(
