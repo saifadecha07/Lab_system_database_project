@@ -855,6 +855,13 @@ function updateVisibility() {
   elements.technicianPanel.hidden = !flags.technician;
   elements.adminPanel.hidden = !flags.admin;
 
+  const navOperator = document.querySelector('.quick-nav__item[href="#operator-panel"]');
+  const navTechnician = document.querySelector('.quick-nav__item[href="#technician-panel"]');
+  const navAdmin = document.querySelector('.quick-nav__item[href="#admin-panel"]');
+  if (navOperator) navOperator.hidden = !flags.staff;
+  if (navTechnician) navTechnician.hidden = !flags.technician;
+  if (navAdmin) navAdmin.hidden = !flags.admin;
+
   if (state.currentUser) {
     elements.sessionName.textContent = `${state.currentUser.first_name} ${state.currentUser.last_name}`;
     elements.sessionMeta.textContent = `${state.currentUser.email} | ${state.currentUser.role_name} | Client ${state.clientIp}`;
