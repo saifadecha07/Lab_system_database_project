@@ -772,43 +772,6 @@ const REPORT_TITLES = {
   "reservation-summary":"Q5 — Reservation Summary (GROUP BY + EXTRACT)",
 };
 
-function renderReportTable(reportKey, rows) {
-  const output = document.getElementById("report-output");
-  if (!output) return;
-
-  const cols = REPORT_COLUMNS[reportKey] || [];
-  const title = REPORT_TITLES[reportKey] || reportKey;
-
-  if (!rows.length) {
-    output.innerHTML = `<p class="empty-state"><strong>${title}</strong> — No data found.</p>`;
-    return;
-  }
-
-  const headerCells = cols.map((c) => `<th>${c.label}</th>`).join("");
-  const bodyRows = rows
-    .map((row) => {
-      const cells = cols
-        .map((c) => {
-          const raw = row[c.key];
-          const display = c.fmt ? c.fmt(raw) : (raw ?? "—");
-          return `<td>${display}</td>`;
-        })
-        .join("");
-      return `<tr>${cells}</tr>`;
-    })
-    .join("");
-
-  output.innerHTML = `
-    <p class="report-title"><strong>${title}</strong> — ${rows.length} row(s)</p>
-    <div class="table-wrap">
-      <table class="report-table">
-        <thead><tr>${headerCells}</tr></thead>
-        <tbody>${bodyRows}</tbody>
-      </table>
-    </div>
-  `;
-}
-
 document.addEventListener("click", async (event) => {
   const btn = event.target.closest("[data-report]");
   if (!btn) return;
