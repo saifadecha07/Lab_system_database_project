@@ -934,7 +934,8 @@ function goToDashboard() {
   });
 }
 
-function bindSubmit(form, buildPayload, request) {
+function bindSubmit(form, buildPayload, request, options = {}) {
+  if (!form) return;
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
@@ -942,7 +943,13 @@ function bindSubmit(form, buildPayload, request) {
       await api(request.path, { method: request.method, body: buildPayload(new FormData(form)) });
       form.reset();
       await loadCurrentUser();
+      if (options.afterLoadCurrentUser) {
+        await options.afterLoadCurrentUser();
+      }
       await refreshDashboard();
+      if (options.afterSuccess) {
+        await options.afterSuccess();
+      }
     } catch (error) {
       setFlash(error.message, "error");
     }
