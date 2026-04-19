@@ -926,6 +926,14 @@ async function refreshDashboard() {
   setFlash("อัปเดตข้อมูลล่าสุดแล้ว", "success");
 }
 
+function goToDashboard() {
+  if (!state.currentUser || !elements.dashboard) return;
+  updateVisibility();
+  requestAnimationFrame(() => {
+    elements.dashboard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
 function bindSubmit(form, buildPayload, request) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
