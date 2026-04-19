@@ -966,6 +966,10 @@ bindSubmit(
         throw new Error("Login completed but session was not created");
       }
     },
+    afterSuccess: () => {
+      goToDashboard();
+      setFlash("เข้าสู่ระบบเรียบร้อยแล้ว", "success");
+    },
   }
 );
 
