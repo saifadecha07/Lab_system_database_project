@@ -807,7 +807,7 @@ boot().catch((error) => {
 function reportTitleV2(reportKey) {
   const titles = {
     "late-borrowings": "รายการยืมล่าช้า",
-    "top-borrowers": "ผู้ยืมสูงสุด",
+    "top-borrowers": "ค่าปรับรายบุคคล",
     "lab-utilization": "ภาพรวมการใช้งานห้อง",
     "equipment-repairs": "สถิติการซ่อมอุปกรณ์",
     "reservation-summary": "สรุปรายการจอง",
