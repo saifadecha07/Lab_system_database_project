@@ -399,6 +399,13 @@ button:active {
     box-shadow: none;
 }
 
+.action-cluster .inline-action,
+.action-cluster .button-ghost {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+}
+
 /* ── Profile band ── */
 .profile-band {
     display: flex;
