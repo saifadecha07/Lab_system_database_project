@@ -103,7 +103,7 @@ def home(request: Request):
             "request": request,
             "app_name": settings.app_name,
             "client_ip": get_remote_address(request),
-            "static_version": "20260419-login-flow-2",
+            "static_version": "20260419-reservation-autoapprove-1",
         },
     )
 

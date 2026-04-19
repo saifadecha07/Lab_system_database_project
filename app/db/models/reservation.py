@@ -15,7 +15,7 @@ class LabReservation(TimestampMixin, Base):
     reserved_by: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False, index=True)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="Pending", nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(50), default="Approved", nullable=False, index=True)
 
     lab = relationship("Lab", back_populates="reservations")
     reserved_by_user = relationship("User", back_populates="reservations")

@@ -45,7 +45,7 @@ def create_reservation(db: Session, current_user: User, payload: ReservationCrea
         reserved_by=current_user.user_id,
         start_time=to_utc_timezone(payload.start_time),
         end_time=to_utc_timezone(payload.end_time),
-        status="Pending",
+        status="Approved",
     )
     db.add(reservation)
     try:

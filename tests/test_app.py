@@ -84,6 +84,7 @@ def test_reservation_overlap_is_rejected(client, db_session, model_bundle):
         headers={"X-CSRF-Token": student_csrf},
     )
     assert first_response.status_code == 201, first_response.text
+    assert first_response.json()["status"] == "Approved"
 
     second_response = client.post(
         "/reservations",
@@ -127,6 +128,7 @@ def test_reservation_response_serializes_in_booking_timezone(client, db_session,
 
     assert create_response.status_code == 201, create_response.text
     payload = create_response.json()
+    assert payload["status"] == "Approved"
     assert payload["start_time"] == "2026-04-10T08:00:00+07:00"
     assert payload["end_time"] == "2026-04-10T12:00:00+07:00"
 

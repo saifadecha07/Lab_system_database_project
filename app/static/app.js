@@ -16,7 +16,7 @@ const FIXED_SLOT_DEFS = {
 };
 const LAB_STATUSES = ["Available", "Reserved", "Maintenance", "Closed"];
 const EQUIPMENT_STATUSES = ["Available", "Borrowed", "In_Repair"];
-const RESERVATION_STATUSES = ["Pending", "Approved", "Cancelled"];
+const RESERVATION_STATUSES = ["Approved", "Cancelled"];
 const EMPTY_MESSAGES = {
   "labs-list": "ยังไม่มีห้องที่พร้อมใช้งาน",
   "equipment-list": "ยังไม่มีอุปกรณ์ที่พร้อมใช้งาน",
