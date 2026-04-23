@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการของฉัน — CN230 Smart Lab</title>
+    <link rel="stylesheet" href="/static/style.css?v={{ static_version }}">
+    <style>
+        body {
+            background: var(--bg, #dce8f5);
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+        }
+
+        .page-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        .topnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+
+        .topnav__brand {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #1a56db;
+        }
+
+        .topnav__links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topnav__links a {
+            font-size: .82rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #1a56db;
+            border: 1.5px solid #1a56db22;
+            transition: background .15s;
+        }
+
+        .topnav__links a:hover,
+        .topnav__links a.active {
+            background: #1a56db;
+            color: #fff;
+        }
+
+        .page-header { margin-bottom: 28px; }
+
+        .page-header .eyebrow {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #1a56db;
+            margin: 0 0 6px;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a3a8a;
+            margin: 0 0 6px;
+        }
+
+        .page-header p {
+            color: #5a6a85;
+            font-size: .93rem;
+            margin: 0;
+        }
+
+        /* 2-col grid used throughout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 720px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* List cards */
+        .list-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+
+        .list-card__header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid #edf0f7;
+        }
+
+        .list-card__header h2 {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #1a3a8a;
+            margin: 0;
+            flex: 1;
+        }
+
+        .mini-pill {
+            background: #e6efff;
+            color: #1a56db;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .mini-pill--warn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .mini-pill--alert {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stack-list {
+            font-size: .85rem;
+            color: #3a4a65;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+
+        .status-badge--active     { background: #d1fae5; color: #065f46; }
+        .status-badge--cancelled  { background: #fee2e2; color: #991b1b; }
+        .status-badge--pending    { background: #fef3c7; color: #92400e; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 28px 0;
+            color: #9aa5be;
+            font-size: .85rem;
+        }
+
+        .flash {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a56db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: .85rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .flash.flash--visible { opacity: 1; }
+    </style>
+</head>
+<body data-app-name="{{ app_name }}" data-client-ip="{{ client_ip }}">
+<div class="page-shell">
+
+    <nav class="topnav">
+        <span class="topnav__brand">CN230 Smart Lab</span>
+        <div class="topnav__links">
+            <a href="/">หน้าหลัก</a>
+            <a href="/booking">จองห้อง</a>
+            <a href="/maintenance">แจ้งซ่อม</a>
+            <a href="/my-items" class="active">รายการของฉัน</a>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <p class="eyebrow">My Account</p>
+        <h1>รายการของฉัน</h1>
+        <p>ติดตามการจอง การยืม ค่าปรับ และการแจ้งเตือนของคุณทั้งหมด</p>
+    </div>
+
+    <!-- Row 1: Reservations + Borrowings -->
+    <div class="two-col">
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>รายการจองของฉัน</h2>
+                <span id="my-reservations-count" class="mini-pill">0</span>
+            </div>
+            <div id="my-reservations" class="stack-list">
+                <div class="empty-state">ยังไม่มีรายการจอง</div>
+            </div>
+        </div>
+
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>รายการยืมของฉัน</h2>
+                <span id="my-borrowings-count" class="mini-pill">0</span>
+            </div>
+            <div id="my-borrowings" class="stack-list">
+                <div class="empty-state">ยังไม่มีรายการยืม</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Penalties + Notifications -->
+    <div class="two-col">
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>ค่าปรับ</h2>
+                <span id="my-penalties-count" class="mini-pill mini-pill--alert">0</span>
+            </div>
+            <div id="my-penalties" class="stack-list">
+                <div class="empty-state">ยังไม่มีค่าปรับ</div>
+            </div>
+        </div>
+
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>การแจ้งเตือน</h2>
+                <span id="my-notifications-count" class="mini-pill mini-pill--warn">0</span>
+            </div>
+            <div id="my-notifications" class="stack-list">
+                <div class="empty-state">ยังไม่มีการแจ้งเตือน</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="flash" class="flash"></div>
+<script type="module" src="/static/app.js?v={{ static_version }}"></script>
+</body>
+</html>

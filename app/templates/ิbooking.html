@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองห้องแล็บ — CN230 Smart Lab</title>
+    <link rel="stylesheet" href="/static/style.css?v={{ static_version }}">
+    <style>
+        /* ── Page shell ── */
+        body {
+            background: var(--bg, #dce8f5);
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+        }
+
+        .page-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* ── Top nav bar ── */
+        .topnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+
+        .topnav__brand {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #1a56db;
+        }
+
+        .topnav__links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topnav__links a {
+            font-size: .82rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #1a56db;
+            border: 1.5px solid #1a56db22;
+            transition: background .15s;
+        }
+
+        .topnav__links a:hover,
+        .topnav__links a.active {
+            background: #1a56db;
+            color: #fff;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header .eyebrow {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #1a56db;
+            margin: 0 0 6px;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a3a8a;
+            margin: 0 0 6px;
+        }
+
+        .page-header p {
+            color: #5a6a85;
+            font-size: .93rem;
+            margin: 0;
+        }
+
+        /* ── Workflow steps ── */
+        .workflow-steps {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 10px 16px;
+            flex: 1;
+            min-width: 160px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+        }
+
+        .workflow-step strong {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #1a56db;
+            color: #fff;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .workflow-step span {
+            font-size: .85rem;
+            color: #3a4a65;
+        }
+
+        /* ── Two-column layout ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 720px) {
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a3a8a;
+            margin: 0 0 4px;
+        }
+
+        .card .card-intro {
+            font-size: .83rem;
+            color: #5a6a85;
+            margin: 0 0 18px;
+        }
+
+        /* ── Form elements ── */
+        label > span,
+        .field-label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #3a4a65;
+            margin-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 12px;
+            border: 1.5px solid #cdd8ec;
+            border-radius: 8px;
+            font-size: .88rem;
+            font-family: inherit;
+            color: #1a2a45;
+            background: #f8fafd;
+            transition: border-color .15s;
+        }
+
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1a56db;
+            background: #fff;
+        }
+
+        textarea { resize: vertical; }
+
+        /* ── Slot grid ── */
+        .slot-option-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .slot-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 10px;
+            border: 2px solid #cdd8ec;
+            border-radius: 10px;
+            background: #f0f6ff;
+            cursor: pointer;
+            text-align: center;
+            transition: all .15s;
+        }
+
+        .slot-btn:hover { border-color: #1a56db; background: #e6efff; }
+
+        .slot-btn.selected {
+            background: #1a56db;
+            border-color: #1a56db;
+            color: #fff;
+        }
+
+        .slot-btn .slot-time {
+            display: block;
+            font-size: .88rem;
+            font-weight: 700;
+            color: inherit;
+        }
+
+        .slot-btn .slot-status {
+            display: block;
+            font-size: .75rem;
+            color: inherit;
+            opacity: .75;
+        }
+
+        /* ── Selection summary card ── */
+        .selection-card {
+            background: #f0f6ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-left: 3px solid #1a56db;
+        }
+
+        .selection-card strong { font-size: .88rem; color: #1a3a8a; display: block; }
+        .selection-card p { font-size: .8rem; color: #5a6a85; margin: 2px 0 0; }
+
+        /* ── Submit button ── */
+        .btn-primary {
+            width: 100%;
+            padding: 13px;
+            background: #1a56db;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .btn-primary:hover { background: #1444b8; }
+
+        /* ── Schedule table ── */
+        .schedule-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            margin-bottom: 24px;
+        }
+
+        .schedule-card h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a3a8a;
+            margin: 0 0 4px;
+        }
+
+        .schedule-card .card-intro {
+            font-size: .83rem;
+            color: #5a6a85;
+            margin: 0 0 14px;
+        }
+
+        .schedule-legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .legend-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .legend-pill--available   { background: #d1fae5; color: #065f46; }
+        .legend-pill--selected    { background: #1a56db; color: #fff; }
+        .legend-pill--busy        { background: #fee2e2; color: #991b1b; }
+        .legend-pill--unavailable { background: #e5e7eb; color: #6b7280; }
+
+        /* The actual schedule table is rendered by app.js into #reservation-schedule */
+        #reservation-schedule { overflow-x: auto; }
+
+        /* ── My reservations list ── */
+        .my-lists-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 720px) {
+            .my-lists-grid { grid-template-columns: 1fr; }
+        }
+
+        .list-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+
+        .list-card__header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .list-card__header h2 {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #1a3a8a;
+            margin: 0;
+        }
+
+        .mini-pill {
+            background: #e6efff;
+            color: #1a56db;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .stack-list { font-size: .85rem; color: #3a4a65; }
+
+        /* ── Flash message ── */
+        .flash {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a56db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: .85rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .flash.flash--visible { opacity: 1; }
+    </style>
+</head>
+<body data-app-name="{{ app_name }}" data-client-ip="{{ client_ip }}">
+<div class="page-shell">
+
+    <!-- ── Top navigation ── -->
+    <nav class="topnav">
+        <span class="topnav__brand">CN230 Smart Lab</span>
+        <div class="topnav__links">
+            <a href="/">หน้าหลัก</a>
+            <a href="/booking" class="active">จองห้อง</a>
+            <a href="/maintenance">แจ้งซ่อม</a>
+            <a href="/my-items">รายการของฉัน</a>
+        </div>
+    </nav>
+
+    <!-- ── Page header ── -->
+    <div class="page-header">
+        <p class="eyebrow">Self Service</p>
+        <h1>จองห้องแล็บ</h1>
+        <p>เลือกวัน เลือกห้อง แล้วกดรอบเวลาที่ว่างได้เลย</p>
+    </div>
+
+    <!-- ── How-to steps ── -->
+    <div class="workflow-steps">
+        <div class="workflow-step"><strong>1</strong><span>เลือกวันที่ต้องการใช้งาน</span></div>
+        <div class="workflow-step"><strong>2</strong><span>เลือกห้องจากรายการ</span></div>
+        <div class="workflow-step"><strong>3</strong><span>กดเลือกรอบเวลาที่ว่าง</span></div>
+        <div class="workflow-step"><strong>4</strong><span>ตรวจสอบแล้วกดยืนยัน</span></div>
+    </div>
+
+    <!-- ── Booking form ── -->
+    <div class="feature-grid">
+        <form id="reservation-form" class="card">
+            <h2>จองห้องแบบรอบเวลา</h2>
+            <p class="card-intro">ระบบรองรับ 3 รอบเวลา: 08:00-12:00, 12:00-16:00 และ 16:00-20:00</p>
+
+            <label>
+                <span>วันที่ต้องการจอง</span>
+                <input id="reservation-date" name="reservation_date" type="date" required>
+            </label>
+
+            <label>
+                <span>ห้อง</span>
+                <select id="reservation-lab" name="lab_id" required></select>
+            </label>
+
+            <div>
+                <span class="field-label">เลือกรอบเวลา</span>
+                <div id="reservation-slot-options" class="slot-option-grid"></div>
+            </div>
+
+            <input id="reservation-slot" name="slot_key" type="hidden" required>
+
+            <div id="reservation-selection" class="selection-card">
+                <strong>ยังไม่ได้เลือกรอบเวลา</strong>
+                <p>เลือกรอบเวลาจากปุ่มด้านบน หรือกดเลือกจากตารางด้านล่าง</p>
+            </div>
+
+            <button type="submit" class="btn-primary">ยืนยันการจอง</button>
+        </form>
+
+        <!-- ── Quick info: available rooms ── -->
+        <div class="card">
+            <h2>ห้องที่เปิดให้จอง</h2>
+            <p class="card-intro">ดูห้องและสถานะปัจจุบัน</p>
+            <div id="labs-list" class="stack-list"></div>
+        </div>
+    </div>
+
+    <!-- ── Schedule grid ── -->
+    <div class="schedule-card">
+        <h2>ตารางห้องและรอบเวลาที่จองได้</h2>
+        <p class="card-intro">สีเขียวคือว่าง สีแดงคือมีคนจองแล้ว สีเทาคือห้องไม่พร้อมใช้งาน</p>
+        <div class="schedule-legend">
+            <span class="legend-pill legend-pill--available">ว่าง</span>
+            <span class="legend-pill legend-pill--selected">ที่เลือก</span>
+            <span class="legend-pill legend-pill--busy">ถูกจองแล้ว</span>
+            <span class="legend-pill legend-pill--unavailable">ห้องไม่พร้อม</span>
+        </div>
+        <div id="reservation-schedule" class="reservation-schedule"></div>
+    </div>
+
+    <!-- ── My reservations ── -->
+    <div class="my-lists-grid" id="my-items-section">
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>รายการจองของฉัน</h2>
+                <span id="my-reservations-count" class="mini-pill">0</span>
+            </div>
+            <div id="my-reservations" class="stack-list"></div>
+        </div>
+        <div class="list-card">
+            <div class="list-card__header">
+                <h2>ค่าปรับ</h2>
+                <span id="my-penalties-count" class="mini-pill">0</span>
+            </div>
+            <div id="my-penalties" class="stack-list"></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Flash notification -->
+<div id="flash" class="flash"></div>
+
+<script type="module" src="/static/app.js?v={{ static_version }}"></script>
+</body>
+</html>

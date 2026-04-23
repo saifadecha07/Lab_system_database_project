@@ -33,37 +33,41 @@ const EMPTY_MESSAGES = {
   "audit-logs": "ยังไม่มี audit log",
 };
 
+// ── Null-safe element lookup ──────────────────────────────────────────────────
+// Each property returns the element if it exists on the current page, or null.
+// All code that uses these must guard with `if (elements.X)` before touching them.
 const elements = {
-  flash: document.getElementById("flash"),
-  authPanel: document.getElementById("auth-panel"),
-  dashboard: document.getElementById("dashboard"),
-  sessionName: document.getElementById("session-name"),
-  sessionMeta: document.getElementById("session-meta"),
-  refreshButton: document.getElementById("refresh-button"),
-  logoutButton: document.getElementById("logout-button"),
-  loginForm: document.getElementById("login-form"),
-  registerForm: document.getElementById("register-form"),
-  reservationForm: document.getElementById("reservation-form"),
-  reservationDate: document.getElementById("reservation-date"),
-  maintenanceForm: document.getElementById("maintenance-form"),
-  borrowingForm: document.getElementById("borrowing-form"),
-  labForm: document.getElementById("lab-form"),
-  equipmentForm: document.getElementById("equipment-form"),
-  reservationLab: document.getElementById("reservation-lab"),
-  reservationSlot: document.getElementById("reservation-slot"),
-  reservationSlotOptions: document.getElementById("reservation-slot-options"),
-  reservationSelection: document.getElementById("reservation-selection"),
-  reservationSchedule: document.getElementById("reservation-schedule"),
-  maintenanceEquipment: document.getElementById("maintenance-equipment"),
-  borrowingEquipment: document.getElementById("borrowing-equipment"),
-  borrowingUser: document.getElementById("borrowing-user"),
-  adminEquipmentLab: document.getElementById("admin-equipment-lab"),
-  operatorPanel: document.getElementById("operator-panel"),
-  technicianPanel: document.getElementById("technician-panel"),
-  adminPanel: document.getElementById("admin-panel"),
+  get flash()                 { return document.getElementById("flash"); },
+  get authPanel()             { return document.getElementById("auth-panel"); },
+  get dashboard()             { return document.getElementById("dashboard"); },
+  get sessionName()           { return document.getElementById("session-name"); },
+  get sessionMeta()           { return document.getElementById("session-meta"); },
+  get refreshButton()         { return document.getElementById("refresh-button"); },
+  get logoutButton()          { return document.getElementById("logout-button"); },
+  get loginForm()             { return document.getElementById("login-form"); },
+  get registerForm()          { return document.getElementById("register-form"); },
+  get reservationForm()       { return document.getElementById("reservation-form"); },
+  get reservationDate()       { return document.getElementById("reservation-date"); },
+  get maintenanceForm()       { return document.getElementById("maintenance-form"); },
+  get borrowingForm()         { return document.getElementById("borrowing-form"); },
+  get labForm()               { return document.getElementById("lab-form"); },
+  get equipmentForm()         { return document.getElementById("equipment-form"); },
+  get reservationLab()        { return document.getElementById("reservation-lab"); },
+  get reservationSlot()       { return document.getElementById("reservation-slot"); },
+  get reservationSlotOptions(){ return document.getElementById("reservation-slot-options"); },
+  get reservationSelection()  { return document.getElementById("reservation-selection"); },
+  get reservationSchedule()   { return document.getElementById("reservation-schedule"); },
+  get maintenanceEquipment()  { return document.getElementById("maintenance-equipment"); },
+  get borrowingEquipment()    { return document.getElementById("borrowing-equipment"); },
+  get borrowingUser()         { return document.getElementById("borrowing-user"); },
+  get adminEquipmentLab()     { return document.getElementById("admin-equipment-lab"); },
+  get operatorPanel()         { return document.getElementById("operator-panel"); },
+  get technicianPanel()       { return document.getElementById("technician-panel"); },
+  get adminPanel()            { return document.getElementById("admin-panel"); },
 };
 
 function setFlash(message, tone = "idle") {
+  if (!elements.flash) return;
   elements.flash.textContent = message;
   elements.flash.className = `flash flash--${tone}`;
 }
@@ -120,6 +124,7 @@ function formatBookingDate(dateValue) {
 }
 
 async function loadReservationAvailability() {
+  if (!elements.reservationDate) return;
   const dateValue = elements.reservationDate.value || todayInBookingTimezone();
   if (!elements.reservationDate.value) {
     elements.reservationDate.value = dateValue;
@@ -128,16 +133,20 @@ async function loadReservationAvailability() {
   const availability = await api(`/reservations/availability?booking_date=${dateValue}`);
   state.reservationAvailability = availability;
 
-  const selectedLabStillExists = availability.labs.some((lab) => lab.lab_id === Number(elements.reservationLab.value));
-  if (!selectedLabStillExists && availability.labs.length) {
-    elements.reservationLab.value = String(availability.labs[0].lab_id);
+  if (elements.reservationLab) {
+    const selectedLabStillExists = availability.labs.some((lab) => lab.lab_id === Number(elements.reservationLab.value));
+    if (!selectedLabStillExists && availability.labs.length) {
+      elements.reservationLab.value = String(availability.labs[0].lab_id);
+    }
   }
 
-  const selectedLab = availability.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
-  const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
-  if (!selectedSlot) {
-    const firstAvailableSlot = selectedLab?.slots.find((slot) => slot.is_available);
-    elements.reservationSlot.value = firstAvailableSlot?.slot_key || "";
+  if (elements.reservationSlot) {
+    const selectedLab = availability.labs.find((lab) => lab.lab_id === Number(elements.reservationLab?.value));
+    const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
+    if (!selectedSlot) {
+      const firstAvailableSlot = selectedLab?.slots.find((slot) => slot.is_available);
+      elements.reservationSlot.value = firstAvailableSlot?.slot_key || "";
+    }
   }
 
   renderReservationSlotOptions();
@@ -146,9 +155,10 @@ async function loadReservationAvailability() {
 }
 
 function renderReservationSelection() {
-  const dateValue = elements.reservationDate.value;
-  const labId = Number(elements.reservationLab.value);
-  const slotKey = elements.reservationSlot.value;
+  if (!elements.reservationSelection) return;
+  const dateValue = elements.reservationDate?.value;
+  const labId = Number(elements.reservationLab?.value);
+  const slotKey = elements.reservationSlot?.value;
   const availability = state.reservationAvailability;
   const selectedLab = availability?.labs.find((lab) => lab.lab_id === labId);
   const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === slotKey && slot.is_available);
@@ -168,8 +178,9 @@ function renderReservationSelection() {
 }
 
 function renderReservationSlotOptions() {
+  if (!elements.reservationSlotOptions) return;
   const availability = state.reservationAvailability;
-  const selectedLab = availability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
+  const selectedLab = availability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab?.value));
 
   if (!selectedLab) {
     elements.reservationSlotOptions.innerHTML = '<div class="empty-state">ยังไม่มีรอบเวลาให้เลือก</div>';
@@ -178,7 +189,7 @@ function renderReservationSlotOptions() {
 
   elements.reservationSlotOptions.innerHTML = selectedLab.slots
     .map((slot) => {
-      const isSelected = elements.reservationSlot.value === slot.slot_key;
+      const isSelected = elements.reservationSlot?.value === slot.slot_key;
       const tone = !slot.is_available && selectedLab.status !== "Available"
         ? "unavailable"
         : isSelected
@@ -213,6 +224,7 @@ function renderReservationSlotOptions() {
 }
 
 function renderReservationSchedule() {
+  if (!elements.reservationSchedule) return;
   const availability = state.reservationAvailability;
   if (!availability) {
     elements.reservationSchedule.innerHTML = '<div class="empty-state">กำลังโหลดตารางการจอง...</div>';
@@ -230,7 +242,7 @@ function renderReservationSchedule() {
       const slotCells = lab.slots
         .map((slot) => {
           const isSelected =
-            Number(elements.reservationLab.value) === lab.lab_id && elements.reservationSlot.value === slot.slot_key;
+            Number(elements.reservationLab?.value) === lab.lab_id && elements.reservationSlot?.value === slot.slot_key;
           const tone = !slot.is_available && lab.status !== "Available"
             ? "unavailable"
             : isSelected
@@ -362,22 +374,24 @@ function roleFlags() {
 
 function updateVisibility() {
   const flags = roleFlags();
-  elements.authPanel.hidden = Boolean(state.currentUser);
-  elements.dashboard.hidden = !state.currentUser;
-  elements.operatorPanel.hidden = !flags.staff;
-  elements.technicianPanel.hidden = !flags.technician;
-  elements.adminPanel.hidden = !flags.admin;
 
-  const navOperator = document.querySelector('.quick-nav__item[href="#operator-panel"]');
+  // Each line is guarded — if the element doesn't exist on this page, skip it
+  if (elements.authPanel)      elements.authPanel.hidden      = Boolean(state.currentUser);
+  if (elements.dashboard)      elements.dashboard.hidden      = !state.currentUser;
+  if (elements.operatorPanel)  elements.operatorPanel.hidden  = !flags.staff;
+  if (elements.technicianPanel)elements.technicianPanel.hidden= !flags.technician;
+  if (elements.adminPanel)     elements.adminPanel.hidden     = !flags.admin;
+
+  const navOperator   = document.querySelector('.quick-nav__item[href="#operator-panel"]');
   const navTechnician = document.querySelector('.quick-nav__item[href="#technician-panel"]');
-  const navAdmin = document.querySelector('.quick-nav__item[href="#admin-panel"]');
-  if (navOperator) navOperator.hidden = !flags.staff;
+  const navAdmin      = document.querySelector('.quick-nav__item[href="#admin-panel"]');
+  if (navOperator)   navOperator.hidden   = !flags.staff;
   if (navTechnician) navTechnician.hidden = !flags.technician;
-  if (navAdmin) navAdmin.hidden = !flags.admin;
+  if (navAdmin)      navAdmin.hidden      = !flags.admin;
 
   if (state.currentUser) {
-    elements.sessionName.textContent = `${state.currentUser.first_name} ${state.currentUser.last_name}`;
-    elements.sessionMeta.textContent = `${state.currentUser.email} | ${state.currentUser.role_name} | Client ${state.clientIp}`;
+    if (elements.sessionName) elements.sessionName.textContent = `${state.currentUser.first_name} ${state.currentUser.last_name}`;
+    if (elements.sessionMeta) elements.sessionMeta.textContent = `${state.currentUser.email} | ${state.currentUser.role_name} | Client ${state.clientIp}`;
   }
 }
 
@@ -455,7 +469,7 @@ function goToDashboard() {
 }
 
 function bindSubmit(form, buildPayload, request, options = {}) {
-  if (!form) return;
+  if (!form) return;  // element doesn't exist on this page — skip silently
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
@@ -512,7 +526,6 @@ bindSubmit(
     if (!reservationDate || !slotKey) {
       throw new Error("กรุณาเลือกวันที่และรอบเวลาที่ต้องการจอง");
     }
-
     return {
       lab_id: Number(formData.get("lab_id")),
       start_time: fixedSlotToIso(reservationDate, slotKey, "start"),
@@ -562,33 +575,66 @@ bindSubmit(
   { path: "/admin/equipments", method: "POST" }
 );
 
-elements.refreshButton.addEventListener("click", async () => {
-  try {
-    await loadCurrentUser();
-    await refreshDashboard();
-  } catch (error) {
-    setFlash(error.message, "error");
-  }
-});
+// ── Button listeners (null-safe) ─────────────────────────────────────────────
 
-elements.logoutButton.addEventListener("click", async () => {
-  try {
-    await api("/auth/logout", { method: "POST" });
-    state.currentUser = null;
-    state.csrfToken = null;
-    state.roles = [];
-    updateVisibility();
-    setFlash("ออกจากระบบแล้ว", "success");
-  } catch (error) {
-    setFlash(error.message, "error");
-  }
-});
+if (elements.refreshButton) {
+  elements.refreshButton.addEventListener("click", async () => {
+    try {
+      await loadCurrentUser();
+      await refreshDashboard();
+    } catch (error) {
+      setFlash(error.message, "error");
+    }
+  });
+}
+
+if (elements.logoutButton) {
+  elements.logoutButton.addEventListener("click", async () => {
+    try {
+      await api("/auth/logout", { method: "POST" });
+      state.currentUser = null;
+      state.csrfToken = null;
+      state.roles = [];
+      updateVisibility();
+      setFlash("ออกจากระบบแล้ว", "success");
+    } catch (error) {
+      setFlash(error.message, "error");
+    }
+  });
+}
+
+if (elements.reservationDate) {
+  elements.reservationDate.addEventListener("change", async () => {
+    if (!state.currentUser) return;
+    try {
+      setFlash("กำลังอัปเดตตารางการจอง...", "busy");
+      if (elements.reservationSlot) elements.reservationSlot.value = "";
+      await loadReservationAvailability();
+      setFlash("อัปเดตตารางการจองแล้ว", "success");
+    } catch (error) {
+      setFlash(error.message, "error");
+    }
+  });
+}
+
+if (elements.reservationLab) {
+  elements.reservationLab.addEventListener("change", () => {
+    const selectedLab = state.reservationAvailability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
+    const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot?.value && slot.is_available);
+    if (!selectedSlot && elements.reservationSlot) {
+      elements.reservationSlot.value = selectedLab?.slots.find((slot) => slot.is_available)?.slot_key || "";
+    }
+    renderReservationSlotOptions();
+    renderReservationSelection();
+    renderReservationSchedule();
+  });
+}
 
 document.addEventListener("click", async (event) => {
   const slotButton = event.target.closest("[data-slot-select]");
   if (slotButton) {
-    elements.reservationLab.value = slotButton.dataset.labId;
-    elements.reservationSlot.value = slotButton.dataset.slotSelect;
+    if (elements.reservationLab)  elements.reservationLab.value  = slotButton.dataset.labId;
+    if (elements.reservationSlot) elements.reservationSlot.value = slotButton.dataset.slotSelect;
     renderReservationSlotOptions();
     renderReservationSelection();
     renderReservationSchedule();
@@ -632,9 +678,9 @@ document.addEventListener("click", async (event) => {
       });
     }
     if (action === "update-lab") {
-      const roomInput = document.querySelector(`[data-lab-room="${button.dataset.id}"]`);
+      const roomInput     = document.querySelector(`[data-lab-room="${button.dataset.id}"]`);
       const capacityInput = document.querySelector(`[data-lab-capacity="${button.dataset.id}"]`);
-      const statusInput = document.querySelector(`[data-lab-status="${button.dataset.id}"]`);
+      const statusInput   = document.querySelector(`[data-lab-status="${button.dataset.id}"]`);
       await api(`/admin/labs/${button.dataset.id}`, {
         method: "PATCH",
         body: {
@@ -648,10 +694,10 @@ document.addEventListener("click", async (event) => {
       await api(`/admin/labs/${button.dataset.id}`, { method: "DELETE" });
     }
     if (action === "update-equipment") {
-      const nameInput = document.querySelector(`[data-equipment-name="${button.dataset.id}"]`);
-      const labSelect = document.querySelector(`[data-equipment-lab="${button.dataset.id}"]`);
+      const nameInput     = document.querySelector(`[data-equipment-name="${button.dataset.id}"]`);
+      const labSelect     = document.querySelector(`[data-equipment-lab="${button.dataset.id}"]`);
       const categoryInput = document.querySelector(`[data-equipment-category="${button.dataset.id}"]`);
-      const statusInput = document.querySelector(`[data-equipment-status="${button.dataset.id}"]`);
+      const statusInput   = document.querySelector(`[data-equipment-status="${button.dataset.id}"]`);
       await api(`/admin/equipments/${button.dataset.id}`, {
         method: "PATCH",
         body: {
@@ -680,30 +726,6 @@ document.addEventListener("click", async (event) => {
   } catch (error) {
     setFlash(error.message, "error");
   }
-});
-
-elements.reservationDate.addEventListener("change", async () => {
-  if (!state.currentUser) return;
-
-  try {
-    setFlash("กำลังอัปเดตตารางการจอง...", "busy");
-    elements.reservationSlot.value = "";
-    await loadReservationAvailability();
-    setFlash("อัปเดตตารางการจองแล้ว", "success");
-  } catch (error) {
-    setFlash(error.message, "error");
-  }
-});
-
-elements.reservationLab.addEventListener("change", () => {
-  const selectedLab = state.reservationAvailability?.labs.find((lab) => lab.lab_id === Number(elements.reservationLab.value));
-  const selectedSlot = selectedLab?.slots.find((slot) => slot.slot_key === elements.reservationSlot.value && slot.is_available);
-  if (!selectedSlot) {
-    elements.reservationSlot.value = selectedLab?.slots.find((slot) => slot.is_available)?.slot_key || "";
-  }
-  renderReservationSlotOptions();
-  renderReservationSelection();
-  renderReservationSchedule();
 });
 
 // ---------------------------------------------------------------------------
@@ -796,6 +818,13 @@ async function boot() {
   if (state.currentUser) {
     await refreshDashboard();
   } else {
+    // On sub-pages (booking, maintenance, my-items) there's no auth panel —
+    // redirect to home so the user can log in first
+    const isSubPage = !elements.authPanel;
+    if (isSubPage) {
+      window.location.href = "/";
+      return;
+    }
     setFlash("เข้าสู่ระบบหรือสมัครสมาชิกเพื่อเริ่มใช้งาน", "idle");
   }
 }
@@ -823,6 +852,9 @@ function maintenanceActionLabelV2(status) {
 }
 
 function renderOverview(common, staffSummary) {
+  const overviewCards = document.getElementById("overview-cards");
+  if (!overviewCards) return;
+
   const cards = [
     { label: "Role", value: formatRole(state.currentUser.role_name) },
     { label: "รายการจองที่ยังใช้งาน", value: common.reservations.filter((item) => item.status !== "Cancelled").length },
@@ -837,7 +869,7 @@ function renderOverview(common, staffSummary) {
     );
   }
 
-  document.getElementById("overview-cards").innerHTML = cards
+  overviewCards.innerHTML = cards
     .map((item) => `
       <article class="stat-card">
         <span class="stat-card__label">${item.label}</span>
@@ -956,34 +988,43 @@ function renderCommon(common) {
     )
   );
 
-  elements.reservationLab.innerHTML = common.labs.length
-    ? common.labs.map((lab, index) => optionMarkup(lab.lab_id, `${lab.room_name} (${lab.capacity})`, index === 0)).join("")
-    : optionMarkup("", "ไม่มีห้องที่พร้อมใช้งาน", true);
+  if (elements.reservationLab) {
+    elements.reservationLab.innerHTML = common.labs.length
+      ? common.labs.map((lab, index) => optionMarkup(lab.lab_id, `${lab.room_name} (${lab.capacity})`, index === 0)).join("")
+      : optionMarkup("", "ไม่มีห้องที่พร้อมใช้งาน", true);
+  }
 
   const availableEquipment = common.equipments.filter((item) => item.status === "Available");
   const equipmentOptions = availableEquipment.length
     ? availableEquipment.map((item, index) => optionMarkup(item.equipment_id, `${item.equipment_name} (#${item.equipment_id})`, index === 0)).join("")
     : optionMarkup("", "ไม่มีอุปกรณ์ที่พร้อมใช้งาน", true);
 
-  elements.maintenanceEquipment.innerHTML = equipmentOptions;
-  elements.borrowingEquipment.innerHTML = equipmentOptions;
-  elements.adminEquipmentLab.innerHTML =
-    optionMarkup("", "ยังไม่ได้กำหนดห้อง", true) +
-    common.labs.map((lab) => optionMarkup(lab.lab_id, lab.room_name)).join("");
+  if (elements.maintenanceEquipment) elements.maintenanceEquipment.innerHTML = equipmentOptions;
+  if (elements.borrowingEquipment)   elements.borrowingEquipment.innerHTML   = equipmentOptions;
+  if (elements.adminEquipmentLab) {
+    elements.adminEquipmentLab.innerHTML =
+      optionMarkup("", "ยังไม่ได้กำหนดห้อง", true) +
+      common.labs.map((lab) => optionMarkup(lab.lab_id, lab.room_name)).join("");
+  }
 }
 
 function renderStaff(staffSummary, staffUsers, borrowings) {
-  document.getElementById("staff-summary").innerHTML = `
-    <div class="metric-row"><span>ผู้ใช้ทั้งหมด</span><strong>${staffSummary.total_users}</strong></div>
-    <div class="metric-row"><span>ห้องทั้งหมด</span><strong>${staffSummary.total_labs}</strong></div>
-    <div class="metric-row"><span>อุปกรณ์ทั้งหมด</span><strong>${staffSummary.total_equipments}</strong></div>
-    <div class="metric-row"><span>รายการยืมที่ยังเปิด</span><strong>${staffSummary.active_borrowings}</strong></div>
-    <div class="metric-row"><span>งานซ่อมที่ยังเปิด</span><strong>${staffSummary.active_repairs}</strong></div>
-  `;
+  const staffSummaryEl = document.getElementById("staff-summary");
+  if (staffSummaryEl) {
+    staffSummaryEl.innerHTML = `
+      <div class="metric-row"><span>ผู้ใช้ทั้งหมด</span><strong>${staffSummary.total_users}</strong></div>
+      <div class="metric-row"><span>ห้องทั้งหมด</span><strong>${staffSummary.total_labs}</strong></div>
+      <div class="metric-row"><span>อุปกรณ์ทั้งหมด</span><strong>${staffSummary.total_equipments}</strong></div>
+      <div class="metric-row"><span>รายการยืมที่ยังเปิด</span><strong>${staffSummary.active_borrowings}</strong></div>
+      <div class="metric-row"><span>งานซ่อมที่ยังเปิด</span><strong>${staffSummary.active_repairs}</strong></div>
+    `;
+  }
 
-  elements.borrowingUser.innerHTML = staffUsers.length
-    ? staffUsers.map((user, index) => optionMarkup(user.user_id, `${user.first_name} ${user.last_name} (${user.role_name})`, index === 0)).join("")
-    : optionMarkup("", "ไม่มีผู้ใช้", true);
+  if (elements.borrowingUser) {
+    elements.borrowingUser.innerHTML = staffUsers.length
+      ? staffUsers.map((user, index) => optionMarkup(user.user_id, `${user.first_name} ${user.last_name} (${user.role_name})`, index === 0)).join("")
+      : optionMarkup("", "ไม่มีผู้ใช้", true);
+  }
 
   setCount("active-borrowings-count", borrowings.length);
   renderStack(
@@ -1033,11 +1074,13 @@ function renderMaintenance(queue) {
 }
 
 function renderAdmin(labs, equipments, reservations, users, auditLogs) {
+  if (!elements.adminPanel) return;
+
   const allLabOptions =
     optionMarkup("", "ยังไม่ได้ระบุห้อง", true) +
     labs.map((lab) => optionMarkup(lab.lab_id, lab.room_name)).join("");
 
-  elements.adminEquipmentLab.innerHTML = allLabOptions;
+  if (elements.adminEquipmentLab) elements.adminEquipmentLab.innerHTML = allLabOptions;
   setCount("admin-labs-count", labs.length);
   setCount("admin-equipments-count", equipments.length);
   setCount("admin-reservations-count", reservations.length);
