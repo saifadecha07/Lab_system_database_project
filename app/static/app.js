@@ -373,7 +373,7 @@ function roleFlags() {
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
+  document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
     btn.classList.toggle("tab-btn--active", btn.dataset.tab === tabId);
   });
   document.querySelectorAll(".tab-panel").forEach((panel) => {
@@ -395,8 +395,8 @@ function updateVisibility() {
   if (tabTechnician) tabTechnician.hidden = !flags.technician;
   if (tabAdmin)      tabAdmin.hidden      = !flags.admin;
 
-  const activeBtn = document.querySelector(".tab-btn.tab-btn--active");
-  if (activeBtn && activeBtn.hidden) switchTab("reservation-section");
+  const activeBtn = document.querySelector(".tab-btn[data-tab].tab-btn--active");
+  if (activeBtn && activeBtn.hidden) switchTab("");
 
   if (state.currentUser) {
     if (elements.sessionName) elements.sessionName.textContent = `${state.currentUser.first_name} ${state.currentUser.last_name}`;
@@ -511,7 +511,6 @@ bindSubmit(
     },
     afterSuccess: () => {
       goToDashboard();
-      switchTab("reservation-section");
       setFlash("เข้าสู่ระบบเรียบร้อยแล้ว", "success");
     },
   }

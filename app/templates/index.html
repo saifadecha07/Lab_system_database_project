@@ -102,9 +102,10 @@
                 </section>
 
                 <div class="tab-bar">
-                    <button class="tab-btn tab-btn--active" data-tab="reservation-section">จองห้อง</button>
-                    <button class="tab-btn" data-tab="maintenance-section">แจ้งซ่อม</button>
-                    <button class="tab-btn" data-tab="my-items-section">รายการของฉัน</button>
+                    <a class="tab-btn tab-btn--active" href="/">หน้าหลัก</a>
+                    <a class="tab-btn" href="/booking">จองห้อง</a>
+                    <a class="tab-btn" href="/maintenance">แจ้งซ่อม</a>
+                    <a class="tab-btn" href="/my-items">รายการของฉัน</a>
                     <button class="tab-btn" data-tab="operator-panel" hidden>งานเจ้าหน้าที่</button>
                     <button class="tab-btn" data-tab="technician-panel" hidden>คิวช่าง</button>
                     <button class="tab-btn" data-tab="admin-panel" hidden>จัดการระบบ</button>
@@ -147,132 +148,6 @@
                 </section>
 
                 <div class="tab-container">
-
-                    <section id="reservation-section" class="panel tab-panel tab-panel--active">
-                        <div class="panel__header">
-                            <div>
-                                <p class="section-kicker">Reservation</p>
-                                <h2>จองห้องแล็บ</h2>
-                            </div>
-                            <p class="panel__summary">เลือกวัน ห้อง และรอบเวลาที่ว่าง แล้วกดยืนยัน</p>
-                        </div>
-
-                        <div class="card workflow-card">
-                            <div class="card__title-row">
-                                <h3>วิธีจองห้อง</h3>
-                            </div>
-                            <div class="workflow-steps">
-                                <div class="workflow-step"><strong>1</strong><span>เลือกวันที่ต้องการใช้งาน</span></div>
-                                <div class="workflow-step"><strong>2</strong><span>เลือกห้องจากรายการ</span></div>
-                                <div class="workflow-step"><strong>3</strong><span>กดเลือกรอบเวลาที่ว่าง</span></div>
-                                <div class="workflow-step"><strong>4</strong><span>ตรวจสอบแล้วกดยืนยัน</span></div>
-                            </div>
-                        </div>
-
-                        <form id="reservation-form" class="card form-card form-card--primary">
-                            <h3>จองห้องแบบรอบเวลา</h3>
-                            <p class="card-intro">
-                                ระบบรองรับ 3 รอบเวลา: 08:00-12:00, 12:00-16:00 และ 16:00-20:00
-                            </p>
-                            <label>
-                                <span>วันที่ต้องการจอง</span>
-                                <input id="reservation-date" name="reservation_date" type="date" required>
-                            </label>
-                            <label>
-                                <span>ห้อง</span>
-                                <select id="reservation-lab" name="lab_id" required></select>
-                            </label>
-                            <div>
-                                <span class="field-label">เลือกรอบเวลา</span>
-                                <div id="reservation-slot-options" class="slot-option-grid"></div>
-                            </div>
-                            <input id="reservation-slot" name="slot_key" type="hidden" required>
-                            <div id="reservation-selection" class="selection-card">
-                                <strong>ยังไม่ได้เลือกรอบเวลา</strong>
-                                <p>เลือกรอบเวลาจากปุ่มด้านบน หรือกดเลือกจากตารางด้านล่าง</p>
-                            </div>
-                            <button type="submit">ยืนยันการจอง</button>
-                        </form>
-
-                        <div class="card reservation-schedule-card">
-                            <div class="card__title-row">
-                                <div>
-                                    <h3>ตารางห้องและรอบเวลาที่จองได้</h3>
-                                    <p class="card-intro">สีเขียวคือว่าง สีแดงคือมีคนจองแล้ว สีเทาคือห้องไม่พร้อมใช้งาน</p>
-                                </div>
-                            </div>
-                            <div class="schedule-legend">
-                                <span class="legend-pill legend-pill--available">ว่าง</span>
-                                <span class="legend-pill legend-pill--selected">ที่เลือก</span>
-                                <span class="legend-pill legend-pill--busy">ถูกจองแล้ว</span>
-                                <span class="legend-pill legend-pill--unavailable">ห้องไม่พร้อม</span>
-                            </div>
-                            <div id="reservation-schedule" class="reservation-schedule"></div>
-                        </div>
-                    </section>
-
-                    <section id="maintenance-section" class="panel tab-panel">
-                        <div class="panel__header">
-                            <div>
-                                <p class="section-kicker">Maintenance</p>
-                                <h2>แจ้งซ่อมอุปกรณ์</h2>
-                            </div>
-                            <p class="panel__summary">ใช้เมื่อพบว่าอุปกรณ์เปิดไม่ติด เสียหาย หรือทำงานผิดปกติ เพื่อให้ช่างเห็นคิวซ่อมทันที</p>
-                        </div>
-                        <form id="maintenance-form" class="card form-card">
-                            <label>
-                                <span>อุปกรณ์</span>
-                                <select id="maintenance-equipment" name="equipment_id" required></select>
-                            </label>
-                            <label>
-                                <span>รายละเอียดปัญหา</span>
-                                <textarea name="issue_detail" rows="4" minlength="5" placeholder="อธิบายอาการที่พบให้ชัดเจน" required></textarea>
-                            </label>
-                            <button type="submit">ส่งแจ้งซ่อม</button>
-                        </form>
-                    </section>
-
-                    <section id="my-items-section" class="panel tab-panel">
-                        <div class="panel__header">
-                            <div>
-                                <p class="section-kicker">My Items</p>
-                                <h2>รายการของฉัน</h2>
-                            </div>
-                            <p class="panel__summary">รายการจอง การยืม ค่าปรับ และการแจ้งเตือนของคุณ</p>
-                        </div>
-                        <div class="feature-grid">
-                            <div class="card">
-                                <div class="card__title-row">
-                                    <h3>รายการจองของฉัน</h3>
-                                    <span id="my-reservations-count" class="mini-pill">0</span>
-                                </div>
-                                <div id="my-reservations" class="stack-list"></div>
-                            </div>
-                            <div class="card">
-                                <div class="card__title-row">
-                                    <h3>รายการยืมของฉัน</h3>
-                                    <span id="my-borrowings-count" class="mini-pill">0</span>
-                                </div>
-                                <div id="my-borrowings" class="stack-list"></div>
-                            </div>
-                        </div>
-                        <div class="feature-grid">
-                            <div class="card">
-                                <div class="card__title-row">
-                                    <h3>ค่าปรับ</h3>
-                                    <span id="my-penalties-count" class="mini-pill">0</span>
-                                </div>
-                                <div id="my-penalties" class="stack-list"></div>
-                            </div>
-                            <div class="card">
-                                <div class="card__title-row">
-                                    <h3>การแจ้งเตือน</h3>
-                                    <span id="my-notifications-count" class="mini-pill">0</span>
-                                </div>
-                                <div id="my-notifications" class="stack-list"></div>
-                            </div>
-                        </div>
-                    </section>
 
                     <section id="operator-panel" class="panel tab-panel">
                         <div class="panel__header">

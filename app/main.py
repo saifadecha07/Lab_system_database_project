@@ -139,23 +139,10 @@ def booking(request: Request):
             "static_version": "20260419-reservation-autoapprove-1",
         },
     )
-# ── Paste these three routes into main.py, right after the existing @app.get("/") route ──
-
-@app.get("/booking", response_class=HTMLResponse)
-def booking(request: Request):
-    return templates.TemplateResponse(
-        "booking.html",
-        {
-            "request": request,
-            "app_name": settings.app_name,
-            "client_ip": get_remote_address(request),
-            "static_version": "20260419-reservation-autoapprove-1",
-        },
-    )
 
 
 @app.get("/maintenance", response_class=HTMLResponse)
-def maintenance(request: Request):
+def maintenance_page(request: Request):
     return templates.TemplateResponse(
         "maintenance.html",
         {
@@ -170,7 +157,7 @@ def maintenance(request: Request):
 @app.get("/my-items", response_class=HTMLResponse)
 def my_items(request: Request):
     return templates.TemplateResponse(
-        "my-items.html",
+        "my_items.html",
         {
             "request": request,
             "app_name": settings.app_name,
