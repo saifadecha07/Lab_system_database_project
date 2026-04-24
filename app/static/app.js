@@ -372,22 +372,31 @@ function roleFlags() {
   };
 }
 
+function switchTab(tabId) {
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.toggle("tab-btn--active", btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll(".tab-panel").forEach((panel) => {
+    panel.classList.toggle("tab-panel--active", panel.id === tabId);
+  });
+}
+
 function updateVisibility() {
   const flags = roleFlags();
 
   // Each line is guarded — if the element doesn't exist on this page, skip it
-  if (elements.authPanel)      elements.authPanel.hidden      = Boolean(state.currentUser);
-  if (elements.dashboard)      elements.dashboard.hidden      = !state.currentUser;
-  if (elements.operatorPanel)  elements.operatorPanel.hidden  = !flags.staff;
-  if (elements.technicianPanel)elements.technicianPanel.hidden= !flags.technician;
-  if (elements.adminPanel)     elements.adminPanel.hidden     = !flags.admin;
+  if (elements.authPanel) elements.authPanel.hidden = Boolean(state.currentUser);
+  if (elements.dashboard) elements.dashboard.hidden = !state.currentUser;
 
-  const navOperator   = document.querySelector('.quick-nav__item[href="#operator-panel"]');
-  const navTechnician = document.querySelector('.quick-nav__item[href="#technician-panel"]');
-  const navAdmin      = document.querySelector('.quick-nav__item[href="#admin-panel"]');
-  if (navOperator)   navOperator.hidden   = !flags.staff;
-  if (navTechnician) navTechnician.hidden = !flags.technician;
-  if (navAdmin)      navAdmin.hidden      = !flags.admin;
+  const tabOperator   = document.querySelector('.tab-btn[data-tab="operator-panel"]');
+  const tabTechnician = document.querySelector('.tab-btn[data-tab="technician-panel"]');
+  const tabAdmin      = document.querySelector('.tab-btn[data-tab="admin-panel"]');
+  if (tabOperator)   tabOperator.hidden   = !flags.staff;
+  if (tabTechnician) tabTechnician.hidden = !flags.technician;
+  if (tabAdmin)      tabAdmin.hidden      = !flags.admin;
+
+  const activeBtn = document.querySelector(".tab-btn.tab-btn--active");
+  if (activeBtn && activeBtn.hidden) switchTab("reservation-section");
 
   if (state.currentUser) {
     if (elements.sessionName) elements.sessionName.textContent = `${state.currentUser.first_name} ${state.currentUser.last_name}`;
@@ -502,6 +511,7 @@ bindSubmit(
     },
     afterSuccess: () => {
       goToDashboard();
+      switchTab("reservation-section");
       setFlash("เข้าสู่ระบบเรียบร้อยแล้ว", "success");
     },
   }
@@ -576,6 +586,10 @@ bindSubmit(
 );
 
 // ── Button listeners (null-safe) ─────────────────────────────────────────────
+
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
 
 if (elements.refreshButton) {
   elements.refreshButton.addEventListener("click", async () => {

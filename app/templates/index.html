@@ -101,23 +101,14 @@
                     </div>
                 </section>
 
-                <section class="panel quick-nav-panel">
-                    <div class="panel__header">
-                        <div>
-                            <p class="section-kicker">Quick Actions</p>
-                            <h2>ไปยังงานที่ต้องใช้ทันที</h2>
-                        </div>
-                        <p class="panel__summary">กดข้ามไปยังส่วนที่ต้องการใช้งานได้ทันที ไม่ต้องไล่เลื่อนหานาน</p>
-                    </div>
-                    <div class="quick-nav">
-                        <a class="quick-nav__item" href="#reservation-section">จองห้อง</a>
-                        <a class="quick-nav__item" href="#maintenance-section">แจ้งซ่อม</a>
-                        <a class="quick-nav__item" href="#my-items-section">รายการของฉัน</a>
-                        <a class="quick-nav__item" href="#operator-panel">งานเจ้าหน้าที่</a>
-                        <a class="quick-nav__item" href="#technician-panel">คิวช่าง</a>
-                        <a class="quick-nav__item" href="#admin-panel">จัดการระบบ</a>
-                    </div>
-                </section>
+                <div class="tab-bar">
+                    <button class="tab-btn tab-btn--active" data-tab="reservation-section">จองห้อง</button>
+                    <button class="tab-btn" data-tab="maintenance-section">แจ้งซ่อม</button>
+                    <button class="tab-btn" data-tab="my-items-section">รายการของฉัน</button>
+                    <button class="tab-btn" data-tab="operator-panel" hidden>งานเจ้าหน้าที่</button>
+                    <button class="tab-btn" data-tab="technician-panel" hidden>คิวช่าง</button>
+                    <button class="tab-btn" data-tab="admin-panel" hidden>จัดการระบบ</button>
+                </div>
 
                 <section class="panel">
                     <div class="panel__header">
@@ -155,14 +146,15 @@
                     </div>
                 </section>
 
-                <section class="workspace-grid">
-                    <section id="reservation-section" class="panel">
+                <div class="tab-container">
+
+                    <section id="reservation-section" class="panel tab-panel tab-panel--active">
                         <div class="panel__header">
                             <div>
-                                <p class="section-kicker">Self Service</p>
-                                <h2>งานที่ผู้ใช้ทำเองได้</h2>
+                                <p class="section-kicker">Reservation</p>
+                                <h2>จองห้องแล็บ</h2>
                             </div>
-                            <p class="panel__summary">จองห้อง แจ้งซ่อม และติดตามรายการของตัวเองจากส่วนนี้</p>
+                            <p class="panel__summary">เลือกวัน ห้อง และรอบเวลาที่ว่าง แล้วกดยืนยัน</p>
                         </div>
 
                         <div class="card workflow-card">
@@ -177,50 +169,30 @@
                             </div>
                         </div>
 
-                        <div class="feature-grid">
-                            <form id="reservation-form" class="card form-card form-card--primary">
-                                <h3>จองห้องแบบรอบเวลา</h3>
-                                <p class="card-intro">
-                                    ระบบรองรับ 3 รอบเวลา: 08:00-12:00, 12:00-16:00 และ 16:00-20:00
-                                </p>
-                                <label>
-                                    <span>วันที่ต้องการจอง</span>
-                                    <input id="reservation-date" name="reservation_date" type="date" required>
-                                </label>
-                                <label>
-                                    <span>ห้อง</span>
-                                    <select id="reservation-lab" name="lab_id" required></select>
-                                </label>
-                                <div>
-                                    <span class="field-label">เลือกรอบเวลา</span>
-                                    <div id="reservation-slot-options" class="slot-option-grid"></div>
-                                </div>
-                                <input id="reservation-slot" name="slot_key" type="hidden" required>
-                                <div id="reservation-selection" class="selection-card">
-                                    <strong>ยังไม่ได้เลือกรอบเวลา</strong>
-                                    <p>เลือกรอบเวลาจากปุ่มด้านบน หรือกดเลือกจากตารางด้านล่าง</p>
-                                </div>
-                                <button type="submit">ยืนยันการจอง</button>
-                            </form>
-
-                            <section id="maintenance-section" class="card form-card">
-                                <h3>แจ้งซ่อมอุปกรณ์</h3>
-                                <p class="card-intro">
-                                    ใช้เมื่อพบว่าอุปกรณ์เปิดไม่ติด เสียหาย หรือทำงานผิดปกติ เพื่อให้ช่างเห็นคิวซ่อมทันที
-                                </p>
-                                <form id="maintenance-form" class="form-card__inner">
-                                    <label>
-                                        <span>อุปกรณ์</span>
-                                        <select id="maintenance-equipment" name="equipment_id" required></select>
-                                    </label>
-                                    <label>
-                                        <span>รายละเอียดปัญหา</span>
-                                        <textarea name="issue_detail" rows="4" minlength="5" placeholder="อธิบายอาการที่พบให้ชัดเจน" required></textarea>
-                                    </label>
-                                    <button type="submit">ส่งแจ้งซ่อม</button>
-                                </form>
-                            </section>
-                        </div>
+                        <form id="reservation-form" class="card form-card form-card--primary">
+                            <h3>จองห้องแบบรอบเวลา</h3>
+                            <p class="card-intro">
+                                ระบบรองรับ 3 รอบเวลา: 08:00-12:00, 12:00-16:00 และ 16:00-20:00
+                            </p>
+                            <label>
+                                <span>วันที่ต้องการจอง</span>
+                                <input id="reservation-date" name="reservation_date" type="date" required>
+                            </label>
+                            <label>
+                                <span>ห้อง</span>
+                                <select id="reservation-lab" name="lab_id" required></select>
+                            </label>
+                            <div>
+                                <span class="field-label">เลือกรอบเวลา</span>
+                                <div id="reservation-slot-options" class="slot-option-grid"></div>
+                            </div>
+                            <input id="reservation-slot" name="slot_key" type="hidden" required>
+                            <div id="reservation-selection" class="selection-card">
+                                <strong>ยังไม่ได้เลือกรอบเวลา</strong>
+                                <p>เลือกรอบเวลาจากปุ่มด้านบน หรือกดเลือกจากตารางด้านล่าง</p>
+                            </div>
+                            <button type="submit">ยืนยันการจอง</button>
+                        </form>
 
                         <div class="card reservation-schedule-card">
                             <div class="card__title-row">
@@ -237,8 +209,38 @@
                             </div>
                             <div id="reservation-schedule" class="reservation-schedule"></div>
                         </div>
+                    </section>
 
-                        <div id="my-items-section" class="feature-grid">
+                    <section id="maintenance-section" class="panel tab-panel">
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">Maintenance</p>
+                                <h2>แจ้งซ่อมอุปกรณ์</h2>
+                            </div>
+                            <p class="panel__summary">ใช้เมื่อพบว่าอุปกรณ์เปิดไม่ติด เสียหาย หรือทำงานผิดปกติ เพื่อให้ช่างเห็นคิวซ่อมทันที</p>
+                        </div>
+                        <form id="maintenance-form" class="card form-card">
+                            <label>
+                                <span>อุปกรณ์</span>
+                                <select id="maintenance-equipment" name="equipment_id" required></select>
+                            </label>
+                            <label>
+                                <span>รายละเอียดปัญหา</span>
+                                <textarea name="issue_detail" rows="4" minlength="5" placeholder="อธิบายอาการที่พบให้ชัดเจน" required></textarea>
+                            </label>
+                            <button type="submit">ส่งแจ้งซ่อม</button>
+                        </form>
+                    </section>
+
+                    <section id="my-items-section" class="panel tab-panel">
+                        <div class="panel__header">
+                            <div>
+                                <p class="section-kicker">My Items</p>
+                                <h2>รายการของฉัน</h2>
+                            </div>
+                            <p class="panel__summary">รายการจอง การยืม ค่าปรับ และการแจ้งเตือนของคุณ</p>
+                        </div>
+                        <div class="feature-grid">
                             <div class="card">
                                 <div class="card__title-row">
                                     <h3>รายการจองของฉัน</h3>
@@ -272,7 +274,7 @@
                         </div>
                     </section>
 
-                    <section id="operator-panel" class="panel" hidden>
+                    <section id="operator-panel" class="panel tab-panel">
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Operations</p>
@@ -311,7 +313,6 @@
                             </div>
                             <div id="active-borrowings" class="stack-list"></div>
                         </div>
-
                         <div class="card report-card">
                             <div class="card__title-row">
                                 <h3>รายงานสรุป</h3>
@@ -330,7 +331,7 @@
                         </div>
                     </section>
 
-                    <section id="technician-panel" class="panel" hidden>
+                    <section id="technician-panel" class="panel tab-panel">
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Repair</p>
@@ -347,7 +348,7 @@
                         </div>
                     </section>
 
-                    <section id="admin-panel" class="panel" hidden>
+                    <section id="admin-panel" class="panel tab-panel">
                         <div class="panel__header">
                             <div>
                                 <p class="section-kicker">Administration</p>
@@ -445,7 +446,7 @@
                             </div>
                         </div>
                     </section>
-                </section>
+                </div>
             </section>
         </main>
     </div>
