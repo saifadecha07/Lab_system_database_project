@@ -524,7 +524,12 @@ bindSubmit(
     email: formData.get("email"),
     password: formData.get("password"),
   }),
-  { path: "/auth/register", method: "POST" }
+  { path: "/auth/register", method: "POST" },
+  {
+    afterSuccess: () => {
+      setFlash("ลงทะเบียนสำเร็จแล้ว กรุณาเข้าสู่ระบบ", "success");
+    },
+  }
 );
 
 bindSubmit(
