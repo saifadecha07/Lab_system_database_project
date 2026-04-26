@@ -103,7 +103,7 @@ def home(request: Request):
             "request": request,
             "app_name": settings.app_name,
             "client_ip": get_remote_address(request),
-            "static_version": "20260424-tab-nav-1",
+            "static_version": "20260426-register-fix-1",
         },
     )
 
@@ -136,7 +136,7 @@ def booking(request: Request):
             "request": request,
             "app_name": settings.app_name,
             "client_ip": get_remote_address(request),
-            "static_version": "20260424-tab-nav-1",
+            "static_version": "20260426-register-fix-1",
         },
     )
 
@@ -149,7 +149,7 @@ def maintenance_page(request: Request):
             "request": request,
             "app_name": settings.app_name,
             "client_ip": get_remote_address(request),
-            "static_version": "20260424-tab-nav-1",
+            "static_version": "20260426-register-fix-1",
         },
     )
 
@@ -162,6 +162,6 @@ def my_items(request: Request):
             "request": request,
             "app_name": settings.app_name,
             "client_ip": get_remote_address(request),
-            "static_version": "20260424-tab-nav-1",
+            "static_version": "20260426-register-fix-1",
         },
     )
