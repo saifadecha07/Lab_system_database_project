@@ -143,18 +143,7 @@ uvicorn app.main:app --reload
 - audit logging สำหรับ action สำคัญ
 - reservation overlap protection ทั้งระดับ service และ database
 
-## เอกสารสำคัญในโปรเจกต์
-
-- [docs/SPEC_COMPLIANCE_AUDIT.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SPEC_COMPLIANCE_AUDIT.md:1)
-- [docs/SPEC_ALIGNMENT_CHANGES.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SPEC_ALIGNMENT_CHANGES.md:1)
-- [docs/PROJECT_SPEC_MAPPING.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/PROJECT_SPEC_MAPPING.md:1)
-- [docs/DATABASE_DESIGN_FINAL.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/DATABASE_DESIGN_FINAL.md:1)
-- [docs/SYSTEM_WALKTHROUGH.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/SYSTEM_WALKTHROUGH.md:1)
-- [docs/PRESENTATION_SCRIPT.md](/abs/path/C:/Users/saifa/Desktop/cn230/docs/PRESENTATION_SCRIPT.md:1)
-
 ## สถานะความพร้อมสำหรับส่งงาน
-
-จุดที่ระบบผ่านชัดเจน
 
 - เชื่อมฐานข้อมูลจริง
 - มีหลายบทบาทผู้ใช้
